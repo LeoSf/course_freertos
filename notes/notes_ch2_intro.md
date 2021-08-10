@@ -3,10 +3,6 @@
 Notes and Code Author: Leandro D. Medus  
 August 2021
 
-
-## Ch1. Overview 
-Nothign to add.
-
 ## Ch2. RTOS Introduction
 Real time computing is equivalent to predictable computing
 
