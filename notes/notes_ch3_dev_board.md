@@ -36,9 +36,10 @@ Board features
 ![board_pins_legend](../docs/st_nucleo_board/board_pins_legend.png)
 
 ![nucleo_l552ze_q_zio_left_2020_2_11](../docs/st_nucleo_board/nucleo_l552ze_q_zio_left_2020_2_11.png)
-![nucleo_l552ze_q_morpho_right_2020_2_11](../docs/st_nucleo_board/nucleo_l552ze_q_morpho_right_2020_2_11.png)
-![nucleo_l552ze_q_zio_left_2020_2_11](../docs/st_nucleo_board/nucleo_l552ze_q_zio_left_2020_2_11.png)
 ![nucleo_l552ze_q_zio_right_2020_2_11](../docs/st_nucleo_board/nucleo_l552ze_q_zio_right_2020_2_11.png)
+![nucleo_l552ze_q_morpho_left_2020_2_11](../docs/st_nucleo_board/nucleo_l552ze_q_morpho_left_2020_2_11.png)
+![nucleo_l552ze_q_morpho_right_2020_2_11](../docs/st_nucleo_board/nucleo_l552ze_q_morpho_right_2020_2_11.png)
+
 
 
 
