@@ -5,20 +5,34 @@ August 2021
 
 ## Ch3. Development board used in the course
 
-Driver: STSW-LINK009  
+### Installing SW
+
+
+#### Windows
+Driver: **STSW-LINK009**
 ST-LINK, ST-LINK/V2, ST-LINK/V2-1, STLINK-V3 USB driver signed for Windows7, Windows8, Windows10
+
+After the driver instalation in the decive manager, you can find:
+* Ports (COM & LPT)
+    * USB Sreail device (COM3) -> virtual COM port
+* Universal Serial Bus Device 
+    * ST-Link Debug -> interface for debugging
+
+#### Linux
+
+apt-get install libusb-1.0
+apt-get install libc6:i386 lib32ncurses5
 
 ### Board 
 
 #### Description
 
-NUCLEO-L552ZE-Q
-
+**NUCLEO-L552ZE-Q**  
 STM32 Nucleo-144 development board with STM32L552ZE MCU, SMPS, supports Arduino, ST Zio and morpho connectivity
 
 The STM32L552xx devices are an ultra-low-power microcontrollers family (STM32L5 Series) based on the high-performance Arm® Cortex®-M33 32-bit RISC core. They operate at a frequency of up to 110 MHz.
 
-Board features
+#### Board features
 * STM32 microcontroller in LQFP144 package
 * 3 user LEDs
 * 2 user and reset push-buttons
@@ -29,7 +43,7 @@ Board features
 * Flexible power-supply options: ST-LINK, USB VBUS or external sources
 * On-board ST-LINK debugger/programmer with USB re-enumeration capability: mass storage, Virtual COM port and debug port
 
-#### pinout
+#### Pinout
 
 **Pins Legend** 
 
