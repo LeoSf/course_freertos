@@ -38,3 +38,41 @@ Keep:
 Inside GCC keep only the directory of your own architecture
 
 
+### 6.4 including the freertos code in the project
+
+in the eclipse project just refresh to see the folder Third-Party.
+
+* Select the folder **Third-Party** and go to properties.  
+* In **C/C++ Build** uncheck **Exclude resource for build**
+
+#### Include the headers file
+
+ProjectName > Properties > C/C++ Build > Settings > MCU GCC Compiler > Includes
+* Add > Select workspace > Select: 
+    * Third-Party > org > source > include 
+* Add > Select workspace > Select: 
+    * Third-Party > org > source > portable > GCC > ARM_CM4F
+
+### 6.5 Including FreeRTOS.h
+
+**FreeRTOS.h** is a file especific for a specific project.
+
+**FreeRTOSConfig.h**
+
+In the project directory create a new directory **Config** where we allocate the configuration of our RTOS.
+From the freeRTOS source code, get config for our  arhcitecture. Search for stm32f4. For instance, inside the folder CORTEX-M4F_STM32F407ZG-SK. if the family selected is different, look for that family, ex. stm32L5. From that folder copy the file FreeRTOSConfig.h
+
+Since we have a new directory in the workspace for the freeRTOS project, in this case **Config**:
+* Select the folder **Config** and go to properties.  
+* In **C/C++ Build** uncheck **Exclude resource for build**
+
+Now it's time to include the header file:  
+ProjectName > Properties > C/C++ Build > Settings > MCU GCC Compiler > Includes
+* Add > Select workspace > Select: 
+    * Config
+
+
+
+
+
+
