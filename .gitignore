@@ -1,2 +1,6 @@
 extra_files/*
 drivers/*
+
+workspace_STM32Cube_Examples/*
+workspace_rtos/*
+workspace_rtos_cube/.metadata/*
