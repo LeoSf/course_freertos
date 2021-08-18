@@ -72,7 +72,12 @@ ProjectName > Properties > C/C++ Build > Settings > MCU GCC Compiler > Includes
     * Config
 
 
+### Aditional Notes
 
+Since the main approach is based on the "system workbench for STM32 from AC6 tools" (eclipse), I'm trying to take a similar aproach using STM32CubeIDE. Despite the fact after you select the spefic microcontroler, the main code is generated with CubeMX, the HAL libraries can not be avoided.
+
+Let's see what happens...
+ 
 
 
 
