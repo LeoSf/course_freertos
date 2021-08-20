@@ -28,14 +28,16 @@ In the project directory
 * Third-Party
     * FreeRTOS
         * org
-            > here copy the source and License of FreeRTOS
+            > here copy the source and License of FreeRTOS sources (kernel)
 
 Inside the folder source, the only thing that we can delete because we are not using some libraries is inside **portable**.  
 Keep:
-* GGC
-* MemMang (memory management) 
+* GGC (only ARM_CM4F)
+* MemMang (memory management)  (only heap_4.c)
 
 Inside GCC keep only the directory of your own architecture
+
+In MemMang I only kept heap_4.c for this projects. (memory allocation schemes)
 
 
 ### 6.4 including the freertos code in the project
@@ -46,6 +48,8 @@ in the eclipse project just refresh to see the folder Third-Party.
 * In **C/C++ Build** uncheck **Exclude resource for build**
 
 #### Include the headers file
+
+Important: **Subsection GCC Compiler**
 
 ProjectName > Properties > C/C++ Build > Settings > MCU GCC Compiler > Includes
 * Add > Select workspace > Select: 
