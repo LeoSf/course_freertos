@@ -43,8 +43,12 @@ BaseType_t xTaskCreate(	TaskFunction_t pxTaskCode,
 
 This api will create a TCB (Task Control block ) for the task and associated Stack space in the memory.
 
+```c
+   TaskHandle_t * const pxCreatedTask
+```
+this variable is used to get the "handle" to the task. Handle is nothing but a pointer to the TCB created in memory.
 
-Priority:
+<!-- Priority: -->
 
 
 ### 7.4. FreeRTOS behind the scene Task Management
