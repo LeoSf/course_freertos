@@ -54,6 +54,11 @@ void SystemClock_Config(void);
 static void task1_handler(void* parameters);
 static void task2_handler(void* parameters);
 
+#ifdef USE_SEMIHOSTING
+/* used for semihosting */
+extern void initialise_monitor_handle();
+#endif
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -80,6 +85,11 @@ int main(void)
     HAL_Init();
 
     /* USER CODE BEGIN Init */
+
+#ifdef USE_SEMIHOSTING
+    initialise_monitor_handle();
+    printf("Message in debug mode with semihosting");
+#endif
 
     /* USER CODE END Init */
 
