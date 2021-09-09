@@ -1,0 +1,7 @@
+stm32_assert.h  
+stm32l5xx_hal_conf.h
+system_stm32l5xx.c
+*/Drivers/*
+*/MDK-ARM/*
+*.ld
+*.launch
