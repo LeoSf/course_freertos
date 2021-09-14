@@ -1,4 +1,10 @@
-TBD
+# Course: Mastering RTOS: Hands on FreeRTOS and STM32Fx with Debugging
+
+Notes and Code Author: Leandro D. Medus  
+August 2021
+
+
+## Index
 
 1. Overview of the course
 2. RTOS Introduction
@@ -30,3 +36,10 @@ TBD
 28. Semaphore for Synchronization, mutual exclusion and Interrupt Management
 29. Mutual exclusion
 30. FreeRTOS+Simulator
+
+## Some notes about the tools
+
+
+
+
+

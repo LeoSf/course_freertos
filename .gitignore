@@ -1,9 +1,10 @@
 extra_files/*
 drivers/*
 
-workspace_STM32Cube_Examples/*
 workspace_rtos/*
+workspace_rtos_ac6/*
 workspace_rtos_cube/.metadata/*
+workspace_STM32Cube_Examples/*
 
 .vscode/*
 workspace.code-workspace
