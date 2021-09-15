@@ -118,6 +118,13 @@ int main(void)
     // sending a string
     HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
 
+    /* Init tickstart for timeout management */
+    uint32_t tickstart = HAL_GetTick();
+    // waiting for transmission to complete
+    while(UART_WaitOnFlagUntilTimeout(&hlpuart1, UART_FLAG_TC, RESET, tickstart, HAL_UART_TIMEOUT_VALUE) != HAL_OK);
+
+    HAL_UART_Transmit(&hlpuart1, (uint8_t *) "done\n\r", 6, 100);
+
 
     /* USER CODE END 2 */
 
