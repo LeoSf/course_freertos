@@ -94,19 +94,22 @@ Remember that this board is based on the STM32L552ZETxQ chip
 * Debug: 
     * PA13: DEBUG_JTMS-SWDIO
     * PA14: DEBUG_JTCK-SWCLK
-    * PB3: DEBUG_JTDO-SWO
+    * PB3:  DEBUG_JTDO-SWO
 
 * ADC: 
     * PC2: ADC1_IN3
 
-* Others:
+* USB-C: (USB-C Power Delivery feature)
     * PA11: USB_DM
+    * PB5:  UCPD_DBN (UCPD Dead Battery)
+    * PA15: UCPD_CC1 (Configuration Channel 1)
+    * PB15: UCPD_CC2 (Configuration Channel 2)
+    * PB14: UCPD_FLT (UCPD_FAULT)
+
+* Oscillator:
     * PC14: RCC_OSC32_IN
     * PC15: RCC_OSC32_OUT
-    * PB5: UCPD_DBN
-    * PA15: UCPD_CC1
-    * PB15: UCPD_CC2
-    * PB14: UCPD_FLT
+
 
 
 
