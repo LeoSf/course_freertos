@@ -75,8 +75,38 @@ Some projects files in json format:
     sysmem.c
 ```
 
+### Some default labels for NUCLEO-L552ZE-Q
 
+Remember that this board is based on the STM32L552ZETxQ chip
 
+**Pins and default labels**:
+
+* In / Out: 
+    * PC13: USER_BUTTON 
+    * PB7: LED_BLUE
+    * PA9: LED_RED
+    * PC7: LED_GREEN
+
+* Serial:
+    * PG7: ST-LINK_VCP_TX
+    * PG8: ST-LINK_VCP_RX
+
+* Debug: 
+    * PA13: DEBUG_JTMS-SWDIO
+    * PA14: DEBUG_JTCK-SWCLK
+    * PB3: DEBUG_JTDO-SWO
+
+* ADC: 
+    * PC2: ADC1_IN3
+
+* Others:
+    * PA11: USB_DM
+    * PC14: RCC_OSC32_IN
+    * PC15: RCC_OSC32_OUT
+    * PB5: UCPD_DBN
+    * PA15: UCPD_CC1
+    * PB15: UCPD_CC2
+    * PB14: UCPD_FLT
 
 
 
