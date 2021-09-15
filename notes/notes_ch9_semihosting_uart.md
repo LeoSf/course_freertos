@@ -85,6 +85,8 @@ So to find the PG7 you need to check both tables. You can find the uart function
 
 Course example:
 ```c
+static void pvrSetupHardware(void)
+{
     GPIO_InitTypeDef gpio_uart_pins;
     USART_InitTypeDef uart2_init;
 
@@ -96,6 +98,9 @@ Course example:
 
     //PA2 is UART2_TX, PA3 is AURT2_RX
 
+    //zeroing each and every member element of the structure
+    memset(&gpio_uart_pins,0, sizeof(gpio_uart_pins));
+
     //2. Alternate function configuration of MCU mins to beltage as UARTZ TX and RX
     gpio_uart_pins.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
     gpio_uart_pins.GPIO_Mode = GPIO_Mode_AF;
@@ -106,4 +111,24 @@ Course example:
     3. AF mode settings for the pins
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2); //PA2
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2); //PA3
+
+    //4. UART parameter initializations
+
+    //zeroing each and every member element of the structure
+    memset(&uart2_init,0, sizeof(uart2_init));
+
+    uart2_init.USART_BaudRate = 115200;
+    uart2_init.USART_HardwareFlowControl = USART_Hardware_FlowControl_None; uart2_init.USART_Mode = USART_Mode_Tx | USART_ Mode_Rx;
+    uart2_init.USART_Parity = USART_Parity_No;
+    uart2_init.USART_StopBits = USART_StopBits_1; 
+    uart2_init.USART_WordLength = USART_WordLength_8b; 
+    USART_Init(USART2, &uart2_init);
+}
 ```
+
+### 6. Exercise  UART Printmsg implementation using std periph. libary
+
+Some interesting aproach to print msgs.
+
+
+
