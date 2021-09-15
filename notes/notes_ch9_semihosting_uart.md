@@ -154,3 +154,34 @@ Some interesting aproach to print msgs.
    sprintf(usr_msg, "[Test] -- sending a message --\r\n");
 ```
 
+#### new code for the current version
+
+From *stm32l5xx.h*
+```c
+/** @addtogroup Exported_types
+ * @{
+ */
+typedef enum
+{
+  RESET = 0,
+  SET = !RESET
+} FlagStatus, ITStatus;
+```
+
+From *stm32l5xx_hal_uart.h*
+
+```c
+#define UART_FLAG_TC                        USART_ISR_TC            /*!< UART transmission complete                */
+```
+
+Some useful methods from *stm32l5xx_hal_uart.h*:
+
+```c
+HAL_StatusTypeDef UART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, uint32_t Flag, FlagStatus Status,
+                                              uint32_t Tickstart, uint32_t Timeout);
+
+
+HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+
+HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+```
