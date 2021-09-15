@@ -188,6 +188,22 @@ HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, ui
 
 How it is implemented in code:
 
+**sprintf** as uaxiliary function:  
+The C library function int sprintf(char *str, const char *format, ...) sends formatted output to a string pointed to, by str.
+```c
+int sprintf(char *str, const char *format, ...);
+```
+
+```c
+// private variables
+char usr_msg[250];
+```
+
+in main
+```c
+   sprintf(usr_msg, "[Test] -- sending a message --\r\n");
+```
+
 ```c
        // sending a string
     HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
