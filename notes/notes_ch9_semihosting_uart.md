@@ -90,7 +90,7 @@ static void pvrSetupHardware(void)
     GPIO_InitTypeDef gpio_uart_pins;
     USART_InitTypeDef uart2_init;
 
-   GPIO InitTypedef gpio uart_pins;
+    GPIO InitTypedef gpio uart_pins;
 
     //1. Enable the UARTZ and GPIOA Peripheral clock
     RCC_APB1PeriphClockCmd (RCC_APB1Periph_USART2, ENABLE); 
@@ -123,6 +123,9 @@ static void pvrSetupHardware(void)
     uart2_init.USART_StopBits = USART_StopBits_1; 
     uart2_init.USART_WordLength = USART_WordLength_8b; 
     USART_Init(USART2, &uart2_init);
+
+    // 5. Enable the UART 2 peripheral 
+    USART_Cmd((USART2, ENABLE);
 }
 ```
 
@@ -130,5 +133,24 @@ static void pvrSetupHardware(void)
 
 Some interesting aproach to print msgs.
 
+```c
 
+    char msg[100] = "[Test] -- sending a message --\r\n"
+    char usr_msg[250];
+
+   void printmsg(char *msg);
+
+    void printmsg(char *msg)
+    {
+        for(i=0; i < strlen(msg); i++)
+        {
+            while(USART_GetFalgStatus(USART2, USART_FLAG_TXE) != SET);
+            UART_SendData(USART2, msg[i]);
+        }
+    }
+```
+
+```c
+   sprintf(usr_msg, "[Test] -- sending a message --\r\n");
+```
 
