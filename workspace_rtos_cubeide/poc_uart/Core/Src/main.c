@@ -66,7 +66,8 @@ static void MX_UCPD1_Init(void);
 static void MX_USB_PCD_Init(void);
 /* USER CODE BEGIN PFP */
 
-void printmsg(char *msg);
+void sendMsg(char *msg);
+void sendChar(char *c);
 
 /* USER CODE END PFP */
 
@@ -110,20 +111,11 @@ int main(void)
     MX_USB_PCD_Init();
     /* USER CODE BEGIN 2 */
 
-    sprintf(usr_msg, "[Test] -- sending a message --\r\n");
 
-    // basic test to send a char
-    // HAL_UART_Transmit(&hlpuart1, (uint8_t *) "*", 1, 100);
+    // sending only one char
+    //sendChar((char*)"c");
 
-    // sending a string
-    HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
-
-    /* Init tickstart for timeout management */
-    uint32_t tickstart = HAL_GetTick();
-    // waiting for transmission to complete
-    while(UART_WaitOnFlagUntilTimeout(&hlpuart1, UART_FLAG_TC, RESET, tickstart, HAL_UART_TIMEOUT_VALUE) != HAL_OK);
-
-    HAL_UART_Transmit(&hlpuart1, (uint8_t *) "done\n\r", 6, 100);
+    sendMsg((char*)"[info] ---- Proof of Concept: UART in NUCLEO-L552----\r\n");
 
 
     /* USER CODE END 2 */
@@ -476,9 +468,26 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void printmsg(char *msg)
+void sendMsg(char *msg)
 {
+//	sprintf(usr_msg, "[Test] -- sending a message --\r\n");
+	sprintf(usr_msg, msg);
 
+	// sending a string
+	HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
+
+//	/* Init tickstart for timeout management */
+//	uint32_t tickstart = HAL_GetTick();
+//	// waiting for transmission to complete
+//	while(UART_WaitOnFlagUntilTimeout(&hlpuart1, UART_FLAG_TC, RESET, tickstart, HAL_UART_TIMEOUT_VALUE) != HAL_OK);
+//
+//	HAL_UART_Transmit(&hlpuart1, (uint8_t *) "done\n\r", 6, 100);
+}
+
+void sendChar(char *ch)
+{
+	// basic test to send a char
+	HAL_UART_Transmit(&hlpuart1, (uint8_t *) ch, 1, 100);
 }
 
 /* USER CODE END 4 */
