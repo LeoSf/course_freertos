@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,8 +67,11 @@ static void MX_UCPD1_Init(void);
 static void MX_USB_PCD_Init(void);
 /* USER CODE BEGIN PFP */
 
-void sendMsg(char *msg);
+void sendString(char *msg);
 void sendChar(char *c);
+
+static void task1_handler(void* parameters);
+static void task2_handler(void* parameters);
 
 /* USER CODE END PFP */
 
@@ -83,6 +87,10 @@ void sendChar(char *c);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
+	TaskHandle_t task1_handle;
+	TaskHandle_t task2_handle;
+
+	BaseType_t status;
 
     /* USER CODE END 1 */
 
@@ -115,7 +123,21 @@ int main(void)
     // sending only one char
     //sendChar((char*)"c");
 
-    sendMsg((char*)"[info] ---- Proof of Concept: UART in NUCLEO-L552----\r\n");
+    sendString((char*)"[info] ---- Proof of Concept: UART in NUCLEO-L552----\r\n");
+
+    status = xTaskCreate(task1_handler, "Task-1", 200, "Hello world from Task-1", 2, &task1_handle);
+
+	configASSERT(status == pdPASS);
+
+	status = xTaskCreate(task2_handler, "Task-2", 200, "Hello world from Task-2", 2, &task2_handle);
+
+	configASSERT(status == pdPASS);
+
+	//start the freeRTOS scheduler
+	vTaskStartScheduler();
+
+	//if the control comes here, then the launch of the scheduler has failed due to
+	//insufficient memory in heap
 
 
     /* USER CODE END 2 */
@@ -468,7 +490,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void sendMsg(char *msg)
+void sendString(char *msg)
 {
 //	sprintf(usr_msg, "[Test] -- sending a message --\r\n");
 	sprintf(usr_msg, msg);
@@ -488,6 +510,37 @@ void sendChar(char *ch)
 {
 	// basic test to send a char
 	HAL_UART_Transmit(&hlpuart1, (uint8_t *) ch, 1, 100);
+}
+
+static void task1_handler(void* parameters)
+{
+
+	char msg[100];
+//	sprintf(msg, (char*)parameters);
+
+	while(1)
+	{
+		snprintf(msg,100,"%s\n", (char*)parameters);
+//		SEGGER_SYSVIEW_PrintfTarget(msg);
+
+		sendString()
+		taskYIELD();
+	}
+
+}
+
+
+static void task2_handler(void* parameters)
+{
+	char msg[100];
+
+	while(1)
+	{
+//		snprintf(msg,100,"%s\n", (char*)parameters);
+//		SEGGER_SYSVIEW_PrintfTarget(msg);
+		taskYIELD();
+	}
+
 }
 
 /* USER CODE END 4 */
