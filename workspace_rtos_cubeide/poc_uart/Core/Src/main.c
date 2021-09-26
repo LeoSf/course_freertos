@@ -20,6 +20,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -523,8 +524,8 @@ static void task1_handler(void* parameters)
 		snprintf(msg,100,"%s\n", (char*)parameters);
 //		SEGGER_SYSVIEW_PrintfTarget(msg);
 
-		sendString()
-		taskYIELD();
+		sendString(msg);
+//		taskYIELD();
 	}
 
 }
@@ -536,7 +537,8 @@ static void task2_handler(void* parameters)
 
 	while(1)
 	{
-//		snprintf(msg,100,"%s\n", (char*)parameters);
+		snprintf(msg,100,"%s\n", (char*)parameters);
+		sendString(msg);
 //		SEGGER_SYSVIEW_PrintfTarget(msg);
 		taskYIELD();
 	}

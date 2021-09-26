@@ -30,9 +30,15 @@ In the project directory
         * org
             > here copy the source and License of FreeRTOS sources (kernel)
 
+```
+D:\Repos\courses\fastbit_freertos\drivers\FreeRTOSv202107.00\FreeRTOS\Source   
+
+D:\Repos\courses\fastbit_freertos\drivers\FreeRTOSv202012.01-LTS\FreeRTOS-LTS\FreeRTOS\FreeRTOS-Kernel
+```
+
 Inside the folder source, the only thing that we can delete because we are not using some libraries is inside **portable**.  
 Keep:
-* GGC (only ARM_CM4F)
+* GGC (only ARM_CM4F/ARM_CM33)
 * MemMang (memory management)  (only heap_4.c)
 
 Inside GCC keep only the directory of your own architecture
