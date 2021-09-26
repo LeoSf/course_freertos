@@ -1,14 +1,14 @@
 /* USER CODE BEGIN Header */
 /**
     ******************************************************************************
-    * @file           : main.c
-    * @brief          : UART Proof of Concept
-    * @author			: Leo Medus
+    * @file             : main.c
+    * @brief            : UART Proof of Concept
+    * @author           : Leo Medus
     ******************************************************************************
-    * @attention
+    * @details This program uses the UART of the NUCLEO-L552 board to send some
+    * string messages. The main program runs a FreeRTOS Kernel V10.3.1 with two tasks.
     *
-    * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-    * All rights reserved.</center></h2>
+    * @attention
     *
     * This software component is licensed by ST under BSD 3-Clause license,
     * the "License"; You may not use this file except in compliance with the
@@ -88,10 +88,10 @@ static void task2_handler(void* parameters);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-	TaskHandle_t task1_handle;
-	TaskHandle_t task2_handle;
+    TaskHandle_t task1_handle;
+    TaskHandle_t task2_handle;
 
-	BaseType_t status;
+    BaseType_t status;
 
     /* USER CODE END 1 */
 
@@ -126,19 +126,31 @@ int main(void)
 
     sendString((char*)"[info] ---- Proof of Concept: UART in NUCLEO-L552----\r\n");
 
-    status = xTaskCreate(task1_handler, "Task-1", 200, "Hello world from Task-1", 2, &task1_handle);
+    status = xTaskCreate(
+                task1_handler,                  // name of the task handler
+                "Task-1",                       // descriptive name. (Could be NULL)
+                200,                            // stack space ([words] = 4*words [bytes])
+                "Hello world from Task-1",      // pvParameters
+                2,                              // priority of the task
+                &task1_handle);                 // handler to the TCB (task controller block)
 
-	configASSERT(status == pdPASS);
+    configASSERT(status == pdPASS);
 
-	status = xTaskCreate(task2_handler, "Task-2", 200, "Hello world from Task-2", 2, &task2_handle);
+    status = xTaskCreate(
+                task2_handler,
+                "Task-2",
+                200,
+                "Hello world from Task-2",
+                2,
+                &task2_handle);
 
-	configASSERT(status == pdPASS);
+    configASSERT(status == pdPASS);
 
-	//start the freeRTOS scheduler
-	vTaskStartScheduler();
+    //start the freeRTOS scheduler
+    vTaskStartScheduler();
 
-	//if the control comes here, then the launch of the scheduler has failed due to
-	//insufficient memory in heap
+    //if the control comes here, then the launch of the scheduler has failed due to
+    //insufficient memory in heap
 
 
     /* USER CODE END 2 */
@@ -185,7 +197,7 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     /** Initializes the CPU, AHB and APB buses clocks
     */
@@ -198,7 +210,7 @@ void SystemClock_Config(void)
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
 }
 
@@ -239,7 +251,7 @@ static void MX_ADC1_Init(void)
     hadc1.Init.OversamplingMode = DISABLE;
     if (HAL_ADC_Init(&hadc1) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     /** Configure the ADC multi-mode
     */
@@ -258,7 +270,7 @@ static void MX_ADC1_Init(void)
     sConfig.Offset = 0;
     if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     /* USER CODE BEGIN ADC1_Init 2 */
 
@@ -294,19 +306,19 @@ static void MX_LPUART1_UART_Init(void)
     hlpuart1.FifoMode = UART_FIFOMODE_DISABLE;
     if (HAL_UART_Init(&hlpuart1) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     if (HAL_UARTEx_SetTxFifoThreshold(&hlpuart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     if (HAL_UARTEx_SetRxFifoThreshold(&hlpuart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     if (HAL_UARTEx_DisableFifoMode(&hlpuart1) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     /* USER CODE BEGIN LPUART1_Init 2 */
 
@@ -344,7 +356,7 @@ static void MX_RTC_Init(void)
     hrtc.Init.OutPutPullUp = RTC_OUTPUT_PULLUP_NONE;
     if (HAL_RTC_Init(&hrtc) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     privilegeState.rtcPrivilegeFull = RTC_PRIVILEGE_FULL_NO;
     privilegeState.backupRegisterPrivZone = RTC_PRIVILEGE_BKUP_ZONE_NONE;
@@ -352,7 +364,7 @@ static void MX_RTC_Init(void)
     privilegeState.backupRegisterStartZone3 = RTC_BKP_DR0;
     if (HAL_RTCEx_PrivilegeModeSet(&hrtc, &privilegeState) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
     /* USER CODE BEGIN RTC_Init 2 */
 
@@ -493,11 +505,11 @@ static void MX_GPIO_Init(void)
 
 void sendString(char *msg)
 {
-//	sprintf(usr_msg, "[Test] -- sending a message --\r\n");
-	sprintf(usr_msg, msg);
+//  sprintf(usr_msg, "[Test] -- sending a message --\r\n");
+    sprintf(usr_msg, msg);
 
-	// sending a string
-	HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
+    // sending a string
+    HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
 
 //	/* Init tickstart for timeout management */
 //	uint32_t tickstart = HAL_GetTick();
@@ -509,39 +521,39 @@ void sendString(char *msg)
 
 void sendChar(char *ch)
 {
-	// basic test to send a char
-	HAL_UART_Transmit(&hlpuart1, (uint8_t *) ch, 1, 100);
+    // basic test to send a char
+    HAL_UART_Transmit(&hlpuart1, (uint8_t *) ch, 1, 100);
 }
 
 static void task1_handler(void* parameters)
 {
 
-	char msg[100];
+    char msg[100];
 //	sprintf(msg, (char*)parameters);
 
-	while(1)
-	{
-		snprintf(msg,100,"%s\n", (char*)parameters);
+    while(1)
+    {
+        snprintf(msg,100,"%s\n", (char*)parameters);
 //		SEGGER_SYSVIEW_PrintfTarget(msg);
 
-		sendString(msg);
+        sendString(msg);
 //		taskYIELD();
-	}
+    }
 
 }
 
 
 static void task2_handler(void* parameters)
 {
-	char msg[100];
+    char msg[100];
 
-	while(1)
-	{
-		snprintf(msg,100,"%s\n", (char*)parameters);
-		sendString(msg);
+    while(1)
+    {
+        snprintf(msg,100,"%s\n", (char*)parameters);
+        sendString(msg);
 //		SEGGER_SYSVIEW_PrintfTarget(msg);
-		taskYIELD();
-	}
+        taskYIELD();
+    }
 
 }
 
