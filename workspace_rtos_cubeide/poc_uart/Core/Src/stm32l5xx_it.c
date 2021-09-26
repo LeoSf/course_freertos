@@ -65,8 +65,8 @@
 /*           Cortex Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 
-// TODO
-
+// ----------------------------------------------------------------------------
+// TODO Uncomment this section if FreeRTOS is not used.
 //
 ///**
 //  * @brief This function handles Non maskable interrupt.
@@ -195,6 +195,7 @@
 //
 //  /* USER CODE END SysTick_IRQn 1 */
 //}
+// ----------------------------------------------------------------------------
 
 /******************************************************************************/
 /* STM32L5xx Peripheral Interrupt Handlers                                    */
