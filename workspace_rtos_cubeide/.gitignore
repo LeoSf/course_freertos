@@ -5,6 +5,7 @@ system_stm32l5xx.c
 syscalls.c
 sysmem.c
 
+misc/*
 
 */Core/Startup/*
 
