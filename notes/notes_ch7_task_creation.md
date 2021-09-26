@@ -48,6 +48,17 @@ This api will create a TCB (Task Control block ) for the task and associated Sta
 ```
 this variable is used to get the "handle" to the task. Handle is nothing but a pointer to the TCB created in memory.
 
+example:
+```c
+   status = xTaskCreate(
+                task1_handler,                  // name of the task handler
+                "Task-1",                       // descriptive name. (Could be NULL)
+                200,                            // stack space ([words] = 4*words [bytes])
+                "Hello world from Task-1",      // pvParameters
+                2,                              // priority of the task
+                &task1_handle);                 // handler to the TCB (task controller block)
+```
+
 <!-- Priority: -->
 
 
