@@ -32,9 +32,7 @@ extern void initialise_monitor_handles();
 #endif
 ``` 
 
-### 8.3 Using the UART
-
-Here 
+### 8.3 Using the UART 
 
 Here is important to understand which UART is configured by default. From the UM2581 - User manual - STM32L5 Nucleo-144 board (MB1361) - section 6.1
 
@@ -54,6 +52,7 @@ So:
     * type: LPUART1_RX
     * default name: ST-LINK_VCP_RX
 
+**Another important thing here is that for the current board (NULEO-L552), the LPUART1 is connected to the VCP UART (Embedded ST-LINK/V2), and the USART3 is connected to the ARDUINO D0/D1 connector. This default configuration only depends on the SBx connections (soldering bridges) in the board.**
 
 In the new STM32CubeIDE the code structure is realy hihg level since in the main.c file you are going to find only calls to functions and macros. This is suitable since the MX tool manages the comple HAL. The only problem could be that in future versions the current code will no be compatible... (as always) but it really depends on the manufacturer.
 
@@ -214,5 +213,42 @@ in main
     while(UART_WaitOnFlagUntilTimeout(&hlpuart1, UART_FLAG_TC, RESET, tickstart, HAL_UART_TIMEOUT_VALUE) != HAL_OK);
 
     HAL_UART_Transmit(&hlpuart1, (uint8_t *) "done\n\r", 6, 100);
+
+```
+
+#### Task implementation with the UART comm
+
+```c
+#define TRUE            1
+#define FALSE           0
+#define AVAILABLE       TRUE
+#define NOT_AVAILABLE   FALSE
+```
+
+```c
+/* USER CODE BEGIN PV */
+uint8_t UART_ACCESS_KEY = AVAILABLE;
+```
+
+```c
+static void task1_handler(void* parameters)
+{
+
+    char msg[100];
+
+    while(1)
+    {
+        if(UART_ACCESS_KEY == AVAILABLE)
+        {
+            UART_ACCESS_KEY = NOT_AVAILABLE;
+            snprintf(msg,100,"%s\n", (char*)parameters);
+            // SEGGER_SYSVIEW_PrintfTarget(msg);
+
+            sendString(msg);
+            UART_ACCESS_KEY = AVAILABLE;
+            taskYIELD();            // Macro for forcing a context switch
+        }
+    }
+}
 
 ```
