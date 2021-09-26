@@ -39,7 +39,10 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define TRUE            1
+#define FALSE           0
+#define AVAILABLE       TRUE
+#define NOT_AVAILABLE   FALSE
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -54,7 +57,7 @@ PCD_HandleTypeDef hpcd_USB_FS;
 /* USER CODE BEGIN PV */
 
 char usr_msg[250];
-
+uint8_t UART_ACCESS_KEY = AVAILABLE;
 
 /* USER CODE END PV */
 
@@ -533,11 +536,16 @@ static void task1_handler(void* parameters)
 
     while(1)
     {
-        snprintf(msg,100,"%s\n", (char*)parameters);
-//		SEGGER_SYSVIEW_PrintfTarget(msg);
+        if(UART_ACCESS_KEY == AVAILABLE)
+        {
+            UART_ACCESS_KEY = NOT_AVAILABLE;
+            snprintf(msg,100,"%s\n", (char*)parameters);
+            // SEGGER_SYSVIEW_PrintfTarget(msg);
 
-        sendString(msg);
-//		taskYIELD();
+            sendString(msg);
+            UART_ACCESS_KEY = AVAILABLE;
+            taskYIELD();            // Macro for forcing a context switch
+        }
     }
 
 }
@@ -549,10 +557,16 @@ static void task2_handler(void* parameters)
 
     while(1)
     {
-        snprintf(msg,100,"%s\n", (char*)parameters);
-        sendString(msg);
-//		SEGGER_SYSVIEW_PrintfTarget(msg);
-        taskYIELD();
+        if(UART_ACCESS_KEY == AVAILABLE)
+        {
+            UART_ACCESS_KEY = NOT_AVAILABLE;
+            snprintf(msg,100,"%s\n", (char*)parameters);
+            // SEGGER_SYSVIEW_PrintfTarget(msg);
+
+            sendString(msg);
+            UART_ACCESS_KEY = AVAILABLE;
+            taskYIELD();            // Macro for forcing a context switch
+        }
     }
 
 }
