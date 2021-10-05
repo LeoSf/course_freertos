@@ -532,7 +532,6 @@ static void task1_handler(void* parameters)
 {
 
     char msg[100];
-//	sprintf(msg, (char*)parameters);
 
     while(1)
     {
@@ -547,7 +546,6 @@ static void task1_handler(void* parameters)
             taskYIELD();            // Macro for forcing a context switch
         }
     }
-
 }
 
 
@@ -568,7 +566,6 @@ static void task2_handler(void* parameters)
             taskYIELD();            // Macro for forcing a context switch
         }
     }
-
 }
 
 /* USER CODE END 4 */
