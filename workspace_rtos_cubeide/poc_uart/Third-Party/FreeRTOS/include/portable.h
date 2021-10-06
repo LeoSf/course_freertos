@@ -179,6 +179,10 @@ BaseType_t xPortStartScheduler( void ) PRIVILEGED_FUNCTION;
  */
 void vPortEndScheduler( void ) PRIVILEGED_FUNCTION;
 
+
+/* new function */
+void vInitPrioGroupValue(void);
+
 /*
  * The structures and methods of manipulating the MPU are contained within the
  * port layer.
