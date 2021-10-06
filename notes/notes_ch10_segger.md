@@ -119,7 +119,7 @@ Inside SEGGER, place:
 **Note:**  
 
 For the current version I also included:
-* folder Syscall
+* folder Syscall (here I kept only the file for GCC)
 * SEGGER_RTT_ASM_ARMv7M.S
 * SEGGER_RTT_printf.c
 
@@ -144,7 +144,9 @@ add workspace :
 
 You need to patch some of the FreeRTOS files with patch file given by SEGGER system View
 
-
+right click on FreeRTOS folder (in eclipse)
+* Team 
+    * Apply patch
 
 ### 10.8. SEGGER SystemView taking FreeRTOS trace using snapshot mode
 
