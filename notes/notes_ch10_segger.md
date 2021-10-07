@@ -304,10 +304,63 @@ Now we need to do a memory dump to a binary file to read it from Segger Viewer.
 
 **Now, load the data y SeggerViewer**
 
+
 ### 10.9. SEGGER SystemView jlink reflash utility download
 
+#### STEP8: Collect the recorded data (RTT buffer)
+##### Continues recording:
+
+Continues recording on STM32 STLINK based boards
+
+1. Flash the J-link firmware on your board. (this step basically removes the stlink frimware present in your board with Jlink firmware)
+2. open the System View HOST software
+3. Go to Target->Start recording
+4. Mention "Target Device" and RTT address details and click "OK
+5. Software will record the events and display.
+
+Steps:
+* The ST-Link firmware has to be present on the board *checked*
+* Install the Jlink SW package *JLink_Windows_V752d_x86_64.exe*
+* Download the St-Link reflash utility *STLinkReflash_190812.zip*
 
 ### 10.10. SEGGER SystemView taking FreeRTOS trace using Continuous recording
+
+Once the Jlink SW package is installed, you can lauch the reflash utility. But first:
+
+* unplug the board
+* launch the reflash app
+
+```
+[0] Quit
+[1] Upgrade to J-Link
+[2] Update J-Link firmware
+[3] Restore ST-Link
+Selection>1
+
+Preparing for FW update (can take up to 10 seconds)...O.K.
+Identifying ST-LINK variant...O.K.: ST-LINK/V2-1
+Performing firmware update...O.K.
+```
+
+Now J-Link software is running in the board.
+
+Open SeegerViewer. Menu **Target** \> **Start recording**.  
+* Select J-Link
+> If everything is working propperly a configuration windows will open. If not, unplug the board and plug it again.
+* Config:
+    * J-Link Connection: USB
+    * Target Connection: Cortex-M33
+    * Target interface: SWD
+    * Interface speed \[KHz\]: 8000
+    * RTT Control Block Detection:
+        * Address (could fail)
+        * Search range: 0x20000000 256000
+
+In the search range we use the base address of the SRAM and the size to search for the RTT buffer.
+
+**To restore the ST-Link firmware, use again the reflash utility**
+
+**Note**: If the board is not working properly after reflashing the ST-Link SW, just use the firmware for the specific board. In this case, **stsw-link007** (firmware programmer).
 
 
 ### 10.11. Analyzing the trace  An Overview
