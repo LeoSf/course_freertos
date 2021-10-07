@@ -43,6 +43,8 @@
 #define FALSE           0
 #define AVAILABLE       TRUE
 #define NOT_AVAILABLE   FALSE
+
+#define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)       /* Data Watchpoint and Trace Unit */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -124,10 +126,21 @@ int main(void)
     /* USER CODE BEGIN 2 */
 
 
+    //Enable the CYCCNT counter.
+    DWT_CTRL |= ( 1 << 0);
+
     // sending only one char
     //sendChar((char*)"c");
 
     sendString((char*)"[info] ---- Proof of Concept: UART in NUCLEO-L552----\r\n");
+
+
+//    SEGGER_UART_init(500000);
+
+    SEGGER_SYSVIEW_Conf();
+
+   // Start recording with SEGGER
+   SEGGER_SYSVIEW_Start();
 
     status = xTaskCreate(
                 task1_handler,                  // name of the task handler
