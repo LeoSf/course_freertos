@@ -244,6 +244,65 @@ The segger systemview events recording starts only when you call EGGER_SYSVIEW_S
 
 ### 10.8. SEGGER SystemView taking FreeRTOS trace using snapshot mode
 
+#### STP7: Compile, Flash and Debug
+
+1. Compile and flash your FreeRTOS + System View application
+2. Go to debugging mode using your openSTM32 System Workbench.
+3. Hit run and then pause after couple of seconds.
+
+It's important to remember that we are compiling the project for a cortex m33, so the function **void vInitPrioGroupValue(void)** will not work since it is for cortex m7.
+
+Another essential thing when including all the segger paths is that there is a file that uses ASM code, so in the project properties under ASM compiler, in include paths, the workspace **"${workspace_loc:/${ProjName}/Third-Party/SEGGER/Config}"** should be included.
+
+#### STEP8: Collect the recorded data (RTT buffer)
+
+you can do this via continuous recording or Single-shot recording.
+
+##### Single-shot recording:
+
+1. Get the System View RTT buffer address and the number of bytes used. 
+```c
+   (Normally _SEGGER_RTT.aUp[1].pBuffer and SEGGER_RTT.aUp[1].WrOff).
+```
+2. Take the memory dump to a file
+3. save the file with .SVDat extension
+4. use that file to load in to System View HOST software to analyze the events.
+
+In SEGGER_RTT.h:
+```c
+extern SEGGER_RTT_CB _SEGGER_RTT;
+```
+
+Run the program as Debug and in the tab expression, add the variable **_SEGGER_RTT**
+
+In that view
+```
+_SEGGER_RTT
+    aUp
+        aUp[1]
+            pBuffer --- is the address of the buffer
+```
+
+Run the application for a while and stop it.
+
+From the expression windows we get the address of the buffer and the length.
+In this case
+```
+   pBuffer          char*           0x20004408 
+   SizeOfBuffer     unsigned int    1024        ---> this is not
+   WrOff            unsigned int    1023        ---> this!
+```
+
+So address will be 0x20004408 and length 1023.
+
+Now we need to do a memory dump to a binary file to read it from Segger Viewer.
+1. Open the memory windows. Window \> Show view \> Memory browser
+2. Use the buffer memory position
+3. Click on the *export button*
+4. check that the memory address is correct and write the length located at WrOff.
+5. Browse for your personal path for memory dumps and add a name for the file with extension **.VSdat** 
+
+**Now, load the data y SeggerViewer**
 
 ### 10.9. SEGGER SystemView jlink reflash utility download
 
