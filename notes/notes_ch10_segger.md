@@ -148,6 +148,100 @@ right click on FreeRTOS folder (in eclipse)
 * Team 
     * Apply patch
 
+> In this case, since I'm using Nucleo-L5 board, which contains a Cortex-M33, a new custom patch file has been created. This file is based in the patch provided by Segger for Cortex-M.
+
+#### STEP3: FreeRTOSConfig.h Settings
+
+1. The SEGGER_SYSVIEW_FreeRTOS.h header has to be included at the end of FreeRTOSConfig.h or above every include of FreeRTOS.h. It defines the trace macros to create SYSTEMVIEW events.
+
+```c
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
+```
+
+2. In freeRTOSConfig.h include the below macros 
+```c
+#define INCLUDE_xTaskGetIdle TaskHandle 1 
+#define INCLUDE_pxTaskGetStackStart 1   
+```
+
+#### STEP4: MCU and Project specific settings
+
+1. Mention which processor core your MCU is using in SEGGER_SYSVIEW_Conf.h
+> I omitted this part.
+
+2. Do System View buffer size configuration in SEGGER_SYSVIEW_Conf.h (SEGGER_SYSVIEW_RTT_BUFFER_SIZE).
+> Currently in **SEGGER_RTT_Conf.h** and it's called **BUFFER_SIZE_UP**
+
+3. Configure the some of the application specific information in SEGGER_SYSVIEW_Config_FreeRTOS.C
+
+```c
+// The application name to be displayed in SystemViewer
+#define SYSVIEW_APP_NAME        "FreeRTOS PoC UART Application"
+
+// The target device name
+#define SYSVIEW_DEVICE_NAME     "NUCLEO-L552ZE-Q"
+```
+
+From the datasheet of the device: Section **3.5 Embedded SRAM**
+
+The devices feature 256 Kbytes of embedded SRAM. This SRAM is split into three blocks (only two are described?):
+* 192 Kbytes mapped at address 0x2000 0000 (SRAM1)
+* 64 Kbytes located at address 0x0A03 0000 with hardware parity check (SRAM2).
+This memory is also mapped at address 0x2003 0000 offering a contiguous address
+space with the SRAM1.
+This block is accessed through the C-bus for maximum performance. Either 64 Kbytes
+or upper 4 Kbytes of SRAM2 can be retained in Standby mode.
+The SRAM2 can be write-protected with 1 Kbyte granularity
+
+```c
+#define SYSVIEW_RAM_BASE        (0x20000000)
+```
+
+#### STEP5: Enable the ARM Cortex Mx Cycle Counter
+
+This is required to maintain the time stamp information of application events. System View will use the Cycle counter register value to maintain the time stamp information of events.
+
+Data Watchpoint and Trace Unit (DWT)
+
+DWT CYCCNT register of ARM Cortex Mx processor stores number of clock cycles that have been happened after the reset of the Processor.
+
+By default this register is disabled.
+
+
+in the reference manual of ARM cortex M33, section **C3.2 DWT programmers model**
+
+```c
+    Address offset  Name        Type    Reset value     Description
+    0xE0001004      DWT_CYCCNT  RW      0x00000000      Cycle Count Registe
+```
+
+Note:
+*DWT registers are described in the Arm®v8-M Architecture Reference Manual. Peripheral Identification and Component Identification registers are described in the CoreSight™ Components Technical Reference Manual*
+
+To enable DWT, in main.c: 
+
+```c
+/* USER CODE BEGIN PV */
+#define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)
+
+/* USER CODE END PV */
+```
+
+Then after the initialization in main()
+```c
+//Enable the CYCCNT counter.
+DWT_CTRL |= ( 1 << 0);
+```
+
+#### STEP6: Start the recording of events
+
+1. To start the recordings of your FreeTOS application, call the below SEGGER APIS
+
+* SEGGER_SYSVIEW_Conf(); 
+* SEGGER_SYSVIEW_Start();
+
+The segger systemview events recording starts only when you call EGGER_SYSVIEW_Start(). We will call this from main.c
+
 ### 10.8. SEGGER SystemView taking FreeRTOS trace using snapshot mode
 
 
@@ -161,3 +255,18 @@ right click on FreeRTOS folder (in eclipse)
 
 
 ### 10.12. Analyzing FreeRTOS helloword application using SystemView Trace
+
+
+
+## TODO
+
+in SEGGER_SYSVIEW_Conf.h
+
+```c
+#define SEGGER_UART_REC 1
+
+#if (SEGGER_UART_REC == 1)
+	extern void HIF_UART_EnableTXEInterrupt  (void);
+	#define SEGGER_SYSVIEW_ON_EVENT_RECORDED(x)  HIF_UART_EnableTXEInterrupt()
+#endif
+```
