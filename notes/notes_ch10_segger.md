@@ -368,6 +368,18 @@ In the search range we use the base address of the SRAM and the size to search f
 
 ### 10.12. Analyzing FreeRTOS helloword application using SystemView Trace
 
+![task_creation](img/task_creation.png)
+
+TCB: task control block  
+PSP: process stack pointer  
+MSP: main stack pointer (to track the stack utilization)
+
+* Task create: TCB is created
+* Stack info: stack is created
+* Task ready: task is put under ready list
+
+
+
 
 
 ## TODO
