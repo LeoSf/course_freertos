@@ -28,7 +28,23 @@ It is created at the lowest possible priority to ensure it does not use any CPU 
 ```c
    void vApplicationIdleHook(void);
 ```
-*  That's it, whenever idle task is allowed to run, your hook function will get called, where you can do some useful stuffs like sending the MCU to lower mode to save power
+* That's it, whenever idle task is allowed to run, your hook function will get called, where you can do some useful stuffs like sending the MCU to lower mode to save power
 
 ### 11.2. FreeRTOS Timer Services task and other details
+
+#### Timer Services Task (Timer_svc)
+
+* This is also called as timer daemon task
+* The timer daemon task deals with "Software timers"
+* This task is created automatically when the scheduler is started and if **configUSE_TIMERS = 1** in **FreeRTOSConfig.h**
+* The RTOS uses this daemon to manage FreeRTOS software timers and nothing else.
+* If you don't use software timers in your FreeRTOS application then you need to use this Timer daemon task. For that just make **configUSE_TIMERS = 0** in FreeRTOSConfig.h
+* All software timer callback functions execute in the context of the timer daemon task
+
+
+
+this signal corresponds to the **Tmr Svc** task and the small mark indicates the execution of a FreeRTOS API:
+![timer_services_excecution](img/timer_services_excecution.png)
+
+**Note:** In my current version of SeggerViewer this small tick in the signal corresponding to \[Context: Tmr Svc, Event: vTaskDelayUntil\] is not present.
 
