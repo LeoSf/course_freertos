@@ -112,11 +112,11 @@ Before task is switched out, following things have to be taken care.
 taskSELECT_HIGHEST_PRIORITY_TASK();   
 ```
 
-![context_1](img/context_out_1.png)
-![context_2](img/context_out_2.png)
-![context_3](img/context_out_3.png)
-![context_4](img/context_out_4.png)
-![context_5](img/context_out_5.png)
+![context_out_1](img/context_out_1.png)
+![context_out_2](img/context_out_2.png)
+![context_out_3](img/context_out_3.png)
+![context_out_4](img/context_out_4.png)
+![context_out_5](img/context_out_5.png)
 
 
 
@@ -135,5 +135,11 @@ So, at this time, we already know which task (TCB) should be switched in.That me
 2. Pop all the registers (R4-R11, R14) **(Restoring the context)**
 3. Exception exit : Now PSP is pointing to the start address of the stack frame which will be popped out automatically due to exception exit.
 
+![context_in_1](img/context_in_1.png)
+![context_in_2](img/context_in_2.png)
+![context_in_3](img/context_in_3.png)
+![context_in_4](img/context_in_4.png)
+
 
 ### 14.5. Understanding SystemView trace when preemption is off
+
