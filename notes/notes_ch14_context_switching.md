@@ -22,18 +22,17 @@ August 2021
 in main:
 ```c
 taskYIELD();
-   
 ```
 
 in task.h
-```c
-#define taskYIELD()					portYIELD()
+```cpp
+#define taskYIELD()     portYIELD()
 ```
 
 in portmacro.h
-```c
+```cpp
 /* Scheduler utilities. */
-#define portYIELD()					vPortYield()
+#define portYIELD()     vPortYield()
 ```
 
 in port.c
@@ -92,11 +91,49 @@ Remember:
 ![task_creation](img/task_creation.png)
 
 
+### 14.3. Context Switching: Task Switching OUT procedure with animation
+
+#### Task switching out procedure
+
+Before task is switched out, following things have to be taken care.
+
+1. Processor core registers RO, R1, R2, R3, R12, LR, PC, xPSR(stack frame) are saved on to the task's private stack automatically by the processor **SysTick interrupt entry sequence**.
+
+2. If Context Switch is required then SysTick timer will pend the PendSV Exception and PendSV handler runs
+
+3. Processor core registers (R4-R11, R14) have to be saved manually on the task's private stack memory (**Saving the context**)
+
+4. Save the new top of stack value (PSP) into first member of the TCB
+
+5. Select the next potential Task to execute on the CPU. Taken care by **vTaskSwitchContext()** implemented in **tasks.c**
+
+```c
+/* Select a new task to run using either the generic C or port optimised asm code. */ 
+taskSELECT_HIGHEST_PRIORITY_TASK();   
+```
+
+![context_1](img/context_out_1.png)
+![context_2](img/context_out_2.png)
+![context_3](img/context_out_3.png)
+![context_4](img/context_out_4.png)
+![context_5](img/context_out_5.png)
 
 
 
-### 14.3. Context Switching  Task Switching out procedure with animation
+### 14.4. Context switching: understanding pendSV handler code (Task Switching In Procedure)
 
-### 14.4. Context switching  understanding pendSV handler code
+*Explanation of the assembly code of:*
+```c
+void PendSV_Handler( void ) /* __attribute__ (( naked )) PRIVILEGED_FUNCTION */
+```
+
+#### Task Switching In Procedure
+
+So, at this time, we already know which task (TCB) should be switched in.That means new switchable task's TCB can be accessed by **pxCurrentTCB**.
+
+1. First get the address of top of stack. Copy the value of **pxTopOfStack** in to **PSP register**.
+2. Pop all the registers (R4-R11, R14) **(Restoring the context)**
+3. Exception exit : Now PSP is pointing to the start address of the stack frame which will be popped out automatically due to exception exit.
+
 
 ### 14.5. Understanding SystemView trace when preemption is off
