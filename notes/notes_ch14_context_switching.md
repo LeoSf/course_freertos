@@ -66,6 +66,33 @@ State of the task = Contents of the processor core registers  + Stack contents
 
 #### ARM Cortex Mx Core Registers
 
+![cortex_registers](img/cortex_registers.png)
+
+Pointers for stack operation:
+* **PSP**: process stack pointer (user tasks)
+* **MSP**: main stack pointer (kernel tasks)
+
+In FreeRTOS each user task will have it private stack, so tasks use PSP, whereas kernel uses MSP.
+
+There are mainly two different Stack Memories during run time of FreeRTOS based application:
+* Task's private stack (process stack)
+* Kernel Stack (Main stack)
+
+* when a **task** exceutes, it does PUSH and POP in the **Process Stack** using the **SP(PSP)**
+* when a **ISR** exceutes, it does PUSH and POP in the **Main Stack** using the **SP(MSP)**
+
+
+#### Stacks
+
+![heap_kernel_stack](img/heap_kernel_stack.png)
+
+
+Remember:
+
+![task_creation](img/task_creation.png)
+
+
+
 
 
 ### 14.3. Context Switching  Task Switching out procedure with animation
