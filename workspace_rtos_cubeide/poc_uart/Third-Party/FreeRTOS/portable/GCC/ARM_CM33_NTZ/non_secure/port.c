@@ -704,6 +704,9 @@ volatile uint32_t ulDummy = 0UL;
 
 void vPortYield( void ) /* PRIVILEGED_FUNCTION */
 {
+    /* adding trace when yielding is executed */
+    traceISR_EXIT_TO_SCHEDULER();
+
 	/* Set a PendSV to request a context switch. */
 	portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;
 
