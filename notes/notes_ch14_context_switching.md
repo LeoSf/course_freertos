@@ -167,3 +167,28 @@ Description of the captured data for the following acquisition modes:
 5. 003_freertos_poc_uart_w_info5.SVdat: timers enabled, without preemption in colaborative mode
 6. 003_freertos_poc_uart_w_info5b.SVdat: same as before but the trace is longer.
 
+More notes:
+
+I've tried to capture data to make run FreeRTOS in the collaborative mode in all these different attempts. Nevertheless, I had some problems with the config files, so I registered everything to have more information to analyze what was happening. Also, in the configured setup, I tried to use the UART to send a message of which task was active and a segger print statement to indicate when a task was executing the yield call.
+
+Description of the captured data for the following acquisition modes:
+1. 003_freertos_poc_uart_w_info.SVdat: timers enabled, preemption enabled, but without tracing the vPortYield function.
+2. 003_freertos_poc_uart_w_info2.SVdat: timers enabled, preemption enabled, and adding the trace for the vPortYield function.
+3. 003_freertos_poc_uart_w_info3.SVdat: trace without vPortYield calls, so each task switch with a period of 1 ms.
+4. 003_freertos_poc_uart_w_info4.SVdat: preemption is enabled, timers enabled, vPortYield calls but without UART messages send calls. 
+5. 003_freertos_poc_uart_w_info5.SVdat: timers enabled, without preemption in colaborative mode
+6. 003_freertos_poc_uart_w_info5b.SVdat: same as before but the trace is longer.
+
+In (1), you can see a transition from task to task without the timer call and without the scheduler, but this is not true since the scheduler is the one making the context switch.
+
+Another important thing is that the segger print function is executed only when the timer interrupt doesn't take place to switch the context.
+
+In (2), now we can see the scheduler task taking place after a vPortYield call from a task. Although, the same problem with the segger print is happening.
+
+In (3), we don't have a segger print statement probably because the timer is switching the context before that...
+
+In (4), timers are enabled because, after the systick, there is a scheduler task call, but I suppose that the graph corresponds to a program where there is no UART call, so the task duration is shorter, and there are multiple vPortYield. But, after a period of 1 ms there is a timer interrupt... it is a little bit messy.
+
+In (5), everything is working as expected, but the tasks are always active; because of that, the background color is darker. It's not like in the preemptive mode where after the context switch, tasks were not active. 
+
+Everything is the same in (5b), but the trace is longer than in (5) since a proper segger configuration was applied.
