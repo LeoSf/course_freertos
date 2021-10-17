@@ -119,6 +119,18 @@ taskSELECT_HIGHEST_PRIORITY_TASK();
 ![context_out_5](img/context_out_5.png)
 
 
+Some notes:
+PSP: process stack pointer
+    * for user task
+MSP: main stack pointer
+    * for kernel
+
+stmdb store with  decrement before
+stack will be decremented first and then value will be push in the stack whose address is reference by the addres of r0 (r0!)
+
+str r0, [r2] is saving of PSP or the latest stack addr into TCB (of the task running?)
+
+remember: the fist element of the TCB is the top of stack 
 
 ### 14.4. Context switching: understanding pendSV handler code (Task Switching In Procedure)
 
@@ -140,6 +152,18 @@ So, at this time, we already know which task (TCB) should be switched in.That me
 ![context_in_3](img/context_in_3.png)
 ![context_in_4](img/context_in_4.png)
 
-
 ### 14.5. Understanding SystemView trace when preemption is off
+
+```c
+/* segger info message for Segger SystemView */
+SEGGER_SYSVIEW_PrintfTarget(msg);   
+```
+
+Description of the captured data for the following acquisition modes:
+1. 003_freertos_poc_uart_w_info.SVdat: timers enabled, preemption enabled, but without tracing the vPortYield function.
+2. 003_freertos_poc_uart_w_info2.SVdat: timers enabled, preemption enabled, and adding the trace for the vPortYield function.
+3. 003_freertos_poc_uart_w_info3.SVdat: trace without vPortYield calls, so each task switch with a period of 1 ms.
+4. 003_freertos_poc_uart_w_info4.SVdat: trace without timers enabled and with vPortYield.
+5. 003_freertos_poc_uart_w_info5.SVdat: timers enabled, without preemption in colaborative mode
+6. 003_freertos_poc_uart_w_info5b.SVdat: same as before but the trace is longer.
 
