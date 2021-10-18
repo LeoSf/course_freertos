@@ -112,4 +112,33 @@ Remember that this board is based on the STM32L552ZETxQ chip
 
 
 
+### Setting up a FreeRTOS project
+
+Add the folder:
+* FreeRTOS
+* Config
+* SEGGER
+
+After refreshing the project, always check that if the folder were copied from another place, that in eclipse, in properties, the resources were not excluded from the building process. This happens when a folder is included in the project directory without being added manually inside eclipse.
+
+* In **C/C++ Build** uncheck **Exclude resource for build**
+
+Always use: **Add > Select workspace > Select**
+
+ProjectName > Properties > C/C++ Build > Settings > **MCU GCC Compiler > Includes**
+    * SEGGER/OS
+    * SEGGER/Config
+    * /SEGGER/SEGGER
+    * Config
+    * FreeRTOS/CMSIS_RTOS_V2
+    * FreeRTOS/include
+    * FreeRTOS/portable/GCC/ARM_CM33_NTZ/non_secure
+
+ProjectName > Properties > C/C++ Build > Settings > **MCU GCC Assembler > Includes**
+    * SEGGER/Config
+
+
+**MORE IMPORTANT** 
+
+Since the project is created with the Cube MX tool from STM, all the source code is generated automatically. This produces that when we include FreeRTOS the systic hander for the interruption is coded in the FreeRTOS directory. As a consequence, we have to comment the code inside the file **stm32l5xx_it.c** under the section **Cortex Processor Interruption and Exception Handlers**.
 
