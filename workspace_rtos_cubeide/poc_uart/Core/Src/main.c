@@ -552,10 +552,13 @@ static void task1_handler(void* parameters)
         {
             UART_ACCESS_KEY = NOT_AVAILABLE;
             snprintf(msg,100,"%s\n", (char*)parameters);
-            // SEGGER_SYSVIEW_PrintfTarget(msg);
-
             sendString(msg);
             UART_ACCESS_KEY = AVAILABLE;
+
+            /* segger info message for Segger SystemView */
+            SEGGER_SYSVIEW_PrintfTarget("Task-1 is yielding");
+
+            traceISR_EXIT_TO_SCHEDULER();
             taskYIELD();            // Macro for forcing a context switch
         }
     }
@@ -572,10 +575,13 @@ static void task2_handler(void* parameters)
         {
             UART_ACCESS_KEY = NOT_AVAILABLE;
             snprintf(msg,100,"%s\n", (char*)parameters);
-            // SEGGER_SYSVIEW_PrintfTarget(msg);
-
             sendString(msg);
             UART_ACCESS_KEY = AVAILABLE;
+
+            /* segger info message for Segger SystemView */
+            SEGGER_SYSVIEW_PrintfTarget("Task-2 is yielding");
+
+            traceISR_EXIT_TO_SCHEDULER();
             taskYIELD();            // Macro for forcing a context switch
         }
     }
