@@ -78,6 +78,12 @@ Additional information:
 * TODO: Add your defines here.                                       *
 **********************************************************************
 */
+
+/* adding an extra define for sysview */
+
+ #define SEGGER_SYSVIEW_RTT_BUFFER_SIZE          (8*1024)
+
+
 //#define SEGGER_UART_REC 1
 //
 //#if (SEGGER_UART_REC == 1)
