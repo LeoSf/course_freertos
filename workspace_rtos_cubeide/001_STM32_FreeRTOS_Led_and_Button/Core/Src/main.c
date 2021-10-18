@@ -75,8 +75,8 @@ static void MX_GPIO_Init(void);
 static void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void sendString(char *msg);
-static void task1_handler(void* parameters);
-static void task2_handler(void* parameters);
+static void led_task_handler(void* parameters);
+static void button_task_handler(void* parameters);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -92,8 +92,8 @@ int main(void)
 {
 
     /* USER CODE BEGIN 1 */
-    TaskHandle_t task1_handle;
-    TaskHandle_t task2_handle;
+//    TaskHandle_t task1_handle;
+//    TaskHandle_t task2_handle;
     BaseType_t status;
 
     /* USER CODE END 1 */
@@ -119,8 +119,8 @@ int main(void)
     MX_LPUART1_UART_Init();
 
     /* USER CODE BEGIN 2 */
-    //Enable the CYCCNT counter.
-    DWT_CTRL |= ( 1 << 0);
+
+    DWT_CTRL |= ( 1 << 0);                      //Enable the CYCCNT counter. (to maintain time stamps in Segger)
 
     sendString((char*)"[info] ---- Example 001: Led and button tasks with interrupts ----\r\n");
 
@@ -128,26 +128,27 @@ int main(void)
     SEGGER_SYSVIEW_Start();                      // Start recording with SEGGER
 
     status = xTaskCreate(
-                task1_handler,                  // name of the task handler
-                "Task-1",                       // descriptive name. (Could be NULL)
-                200,                            // stack space ([words] = 4*words [bytes])
-                "Hello world from Task-1",      // pvParameters
-                2,                              // priority of the task
-                &task1_handle);                 // handler to the TCB (task controller block)
+                led_task_handler,               // name of the task handler
+                "LED-TASK",                     // descriptive name. (Could be NULL)
+                configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
+                "LED-Task [info]",              // pvParameters
+                1,                              // priority of the task
+                NULL);                          // handler to the TCB (task controller block)
+//                &task1_handle);               // handler to the TCB (task controller block)
 
     configASSERT(status == pdPASS);
 
     status = xTaskCreate(
-                task2_handler,
-                "Task-2",
-                200,
-                "Hello world from Task-2",
-                2,
-                &task2_handle);
+                button_task_handler,
+                "BUTTON-TASK",
+                configMINIMAL_STACK_SIZE,
+                "BUTTON-Task [info]",
+                1,
+                NULL);
 
     configASSERT(status == pdPASS);
 
-    vTaskStartScheduler();                      //start the freeRTOS scheduler
+    vTaskStartScheduler();                      // start the freeRTOS scheduler
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -347,7 +348,7 @@ void sendString(char *msg)
 }
 
 
-static void task1_handler(void* parameters)
+static void led_task_handler(void* parameters)
 {
 
     char msg[100];
@@ -371,7 +372,7 @@ static void task1_handler(void* parameters)
 }
 
 
-static void task2_handler(void* parameters)
+static void button_task_handler(void* parameters)
 {
     char msg[100];
 

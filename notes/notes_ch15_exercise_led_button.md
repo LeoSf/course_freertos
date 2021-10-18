@@ -21,6 +21,7 @@ On nucleo-F446RE board the LED is connected to PA5 pin and button is connected t
 
 
 
+
 ### 15.2. Exercise Adding FreeRTOS source to project
 
 ### 15.3. Exercise  Task create of button and LED task
