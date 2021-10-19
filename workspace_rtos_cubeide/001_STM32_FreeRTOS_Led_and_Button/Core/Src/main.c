@@ -2,7 +2,7 @@
 /**
  ******************************************************************************
  * @file           : main.c
- * @brief          : Example 001: Led and button tasks with interrupts
+ * @brief          : Example 001: Led and button FreeRTOS tasks with pooling
  *                   for NUCLEO-L552.
  *
  * @details TODO
@@ -116,7 +116,7 @@ int main(void)
 
     BaseType_t status;
 
-    char msg_program_init [] = "[info] ---- Example 001: Led and button tasks with interrupts ----\r\n";
+    char msg_program_init [] = "[info] ---- Example 001: Led and button tasks using pooling ----\r\n";
 
     /* USER CODE END 1 */
 
