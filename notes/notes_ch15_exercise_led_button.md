@@ -7,7 +7,7 @@ August 2021
 
 ### 15.1. Exercise  Button and LED task
 
-#### Exercise
+#### Exercise 001
 
 Create 2 Tasks in your FreeRTOS application led_task and button_task.
 
@@ -20,19 +20,14 @@ Led Task should turn on the LED if button flag is SET, otherwise it should turn 
 On nucleo-F446RE board the LED is connected to PA5 pin and button is connected to PC13
 
 
-
-
-### 15.2. Exercise Adding FreeRTOS source to project
-
-### 15.3. Exercise  Task create of button and LED task
-
-### 15.4. Exercise  GPIO configuration code
-
-### 15.5. Exercise  GPIO configuration code cntd.
-
-### 15.6. Exercise  Task handler implementation and testing on the target
-
 ### 15.7. Exercise  working with task and interrupt
+
+#### Exercise 002
+
+Write a FreeRTOS application which creates only 1 task : led_task and it should toggle the led when you press the button by checking the button status flag.
+
+The button interrupt handler must update the button status flag.
+
 
 ### 15.8. Understanding GPIO Interrupts delivery in STM32 MCUs
 
