@@ -32,6 +32,18 @@
  *
  ******************************************************************************
  */
+
+/*
+ * Other useful functions:
+ *
+ *      SEGGER_SYSVIEW_PrintfTarget("Task-1 is yielding");
+ *      snprintf(msg, 100, "%s\n", (char*)parameters);
+ *      sendString(msg);
+ *      traceISR_EXIT_TO_SCHEDULER();
+ *      taskYIELD();
+
+ * */
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -48,8 +60,12 @@
 /* USER CODE BEGIN PTD */
 #define TRUE            1
 #define FALSE           0
+
 #define AVAILABLE       TRUE
 #define NOT_AVAILABLE   FALSE
+
+#define PRESSED         TRUE
+#define NOT_PRESSED     FALSE
 
 #define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)       /* Data Watchpoint and Trace Unit */
 /* USER CODE END PTD */
@@ -69,6 +85,8 @@ UART_HandleTypeDef hlpuart1;
 /* USER CODE BEGIN PV */
 char usr_msg[250];
 uint8_t UART_ACCESS_KEY = AVAILABLE;
+
+uint8_t button_status_flag = NOT_PRESSED;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,6 +116,8 @@ int main(void)
 
     BaseType_t status;
 
+    char msg_program_init [] = "[info] ---- Example 001: Led and button tasks with interrupts ----\r\n";
+
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -123,8 +143,9 @@ int main(void)
 
     DWT_CTRL |= ( 1 << 0);                  //Enable the CYCCNT counter. (to maintain time stamps in Segger)
 
-    sendString((char*)"[info] ---- Example 001: Led and button tasks with interrupts ----\r\n");
+    sendString(msg_program_init);
 
+    SEGGER_SYSVIEW_Conf();
 
     SEGGER_SYSVIEW_Start();                 // Start recording with SEGGER
 
@@ -135,7 +156,7 @@ int main(void)
             "LED-Task [info]",              // pvParameters
             1,                              // priority of the task
             NULL);                          // handler to the TCB (task controller block)
-//            &task1_handle);               // handler to the TCB (task controller block)
+    //            &task1_handle);               // handler to the TCB (task controller block)
 
     configASSERT(status == pdPASS);
 
@@ -277,6 +298,12 @@ static void MX_GPIO_Init(void)
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_RESET);
 
+    /*Configure GPIO pin : USER_BUTTON_Pin */
+    GPIO_InitStruct.Pin = USER_BUTTON_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(USER_BUTTON_GPIO_Port, &GPIO_InitStruct);
+
     /*Configure GPIO pin : LED_GREEN_Pin */
     GPIO_InitStruct.Pin = LED_GREEN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -316,49 +343,57 @@ void sendString(char *msg)
     HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
 }
 
-
+/**
+ * @brief  FreeRTOS task: LED
+ * @details Led Task should turn on the LED if button flag is SET, otherwise it
+ * should turn off the LED.
+ *
+ * @retval None
+ */
 static void led_task_handler(void* parameters)
 {
 
-    char msg[100];
 
     while(1)
     {
-        if(UART_ACCESS_KEY == AVAILABLE)
+
+        if(button_status_flag == PRESSED)
         {
-            UART_ACCESS_KEY = NOT_AVAILABLE;
-            snprintf(msg,100,"%s\n", (char*)parameters);
-            sendString(msg);
-            UART_ACCESS_KEY = AVAILABLE;
+            // turn on the green LED
+            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,  GPIO_PIN_SET);
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port,   LED_RED_Pin,    GPIO_PIN_SET);
+            HAL_GPIO_WritePin(LED_BLUE_GPIO_Port,  LED_BLUE_Pin,   GPIO_PIN_SET);
 
-            /* segger info message for Segger SystemView */
-            SEGGER_SYSVIEW_PrintfTarget("Task-1 is yielding");
-
-            traceISR_EXIT_TO_SCHEDULER();
-            taskYIELD();            // Macro for forcing a context switch
+        }else
+        {
+            // turn off the led
+            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,  GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port,   LED_RED_Pin,    GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(LED_BLUE_GPIO_Port,  LED_BLUE_Pin,   GPIO_PIN_RESET);
         }
     }
 }
 
-
+/**
+ * @brief  FreeRTOS task: BUTTON
+ * @details Button Task should continuously poll the button status of the board
+ * and if pressed it should update the flag variable.
+ *
+ * @retval None
+ */
 static void button_task_handler(void* parameters)
 {
-    char msg[100];
 
     while(1)
     {
-        if(UART_ACCESS_KEY == AVAILABLE)
+        if(HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
         {
-            UART_ACCESS_KEY = NOT_AVAILABLE;
-            snprintf(msg,100,"%s\n", (char*)parameters);
-            sendString(msg);
-            UART_ACCESS_KEY = AVAILABLE;
-
-            /* segger info message for Segger SystemView */
-            SEGGER_SYSVIEW_PrintfTarget("Task-2 is yielding");
-
-            traceISR_EXIT_TO_SCHEDULER();
-            taskYIELD();            // Macro for forcing a context switch
+            // button is pressed
+            button_status_flag = PRESSED;
+        }else
+        {
+            // button is  not pressed
+            button_status_flag = NOT_PRESSED;
         }
     }
 }
