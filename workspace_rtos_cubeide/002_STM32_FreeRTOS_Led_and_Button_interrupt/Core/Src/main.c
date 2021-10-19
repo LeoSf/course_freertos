@@ -2,32 +2,72 @@
 /**
  ******************************************************************************
  * @file           : main.c
- * @brief          : Main program body
+ * @brief          : Example 002: Led and button FreeRTOS tasks with interrupts
+ *                   for NUCLEO-L552.
+ *
+ * @details TODO
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+ * <h2><center>&copy; Copyright 2021 Leandro Medus.
  * All rights reserved.</center></h2>
  *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  ******************************************************************************
  */
+
+/*
+ * Other useful functions:
+ *
+ *      SEGGER_SYSVIEW_PrintfTarget("Task-1 is yielding");
+ *      snprintf(msg, 100, "%s\n", (char*)parameters);
+ *      sendString(msg);
+ *      traceISR_EXIT_TO_SCHEDULER();
+ *      taskYIELD();
+
+ * */
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+#define TRUE            1
+#define FALSE           0
 
+#define AVAILABLE       TRUE
+#define NOT_AVAILABLE   FALSE
+
+#define PRESSED         TRUE
+#define NOT_PRESSED     FALSE
+
+#define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)       /* Data Watchpoint and Trace Unit */
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -43,7 +83,10 @@
 UART_HandleTypeDef hlpuart1;
 
 /* USER CODE BEGIN PV */
+char usr_msg[250];
+uint8_t UART_ACCESS_KEY = AVAILABLE;
 
+uint8_t button_status_flag = NOT_PRESSED;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -51,7 +94,9 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+void sendString(char *msg);
+static void led_task_handler(void* parameters);
+static void button_task_handler(void* parameters);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -66,6 +111,12 @@ static void MX_LPUART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
+    //    TaskHandle_t task1_handle;
+    //    TaskHandle_t task2_handle;
+
+    BaseType_t status;
+
+    char msg_program_init [] = "[info] ---- Example 001: Led and button tasks using interrupts ----\r\n";
 
     /* USER CODE END 1 */
 
@@ -90,6 +141,36 @@ int main(void)
     MX_LPUART1_UART_Init();
     /* USER CODE BEGIN 2 */
 
+    DWT_CTRL |= ( 1 << 0);                  //Enable the CYCCNT counter. (to maintain time stamps in Segger)
+
+    sendString(msg_program_init);
+
+    SEGGER_SYSVIEW_Conf();
+
+    SEGGER_SYSVIEW_Start();                 // Start recording with SEGGER
+
+    status = xTaskCreate(
+            led_task_handler,               // name of the task handler
+            "LED-TASK",                     // descriptive name. (Could be NULL)
+            configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
+            "LED-Task [info]",              // pvParameters
+            1,                              // priority of the task
+            NULL);                          // handler to the TCB (task controller block)
+    //            &task1_handle);               // handler to the TCB (task controller block)
+
+    configASSERT(status == pdPASS);
+
+    status = xTaskCreate(
+            button_task_handler,
+            "BUTTON-TASK",
+            configMINIMAL_STACK_SIZE,
+            "BUTTON-Task [info]",
+            1,
+            NULL);
+
+    configASSERT(status == pdPASS);
+
+    vTaskStartScheduler();                  // start the freeRTOS scheduler
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -114,24 +195,17 @@ void SystemClock_Config(void)
 
     /** Configure the main internal regulator output voltage
      */
-    if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE0) != HAL_OK)
+    if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE2) != HAL_OK)
     {
         Error_Handler();
     }
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-    RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-    RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
-    RCC_OscInitStruct.PLL.PLLM = 1;
-    RCC_OscInitStruct.PLL.PLLN = 55;
-    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
-    RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
         Error_Handler();
@@ -140,12 +214,12 @@ void SystemClock_Config(void)
      */
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
             |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
     {
         Error_Handler();
     }
@@ -167,7 +241,7 @@ static void MX_LPUART1_UART_Init(void)
 
     /* USER CODE END LPUART1_Init 1 */
     hlpuart1.Instance = LPUART1;
-    hlpuart1.Init.BaudRate = 209700;
+    hlpuart1.Init.BaudRate = 115200;
     hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
     hlpuart1.Init.StopBits = UART_STOPBITS_1;
     hlpuart1.Init.Parity = UART_PARITY_NONE;
@@ -255,6 +329,76 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+/* --------------------------------------------------------------------------*/
+
+/**
+ * @brief  This function send a string using the UART
+ * @retval None
+ */
+void sendString(char *msg)
+{
+    sprintf(usr_msg, msg);
+
+    // sending a string
+    HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
+}
+
+/**
+ * @brief  FreeRTOS task: LED
+ * @details Led Task should turn on the LED if button flag is SET, otherwise it
+ * should turn off the LED.
+ *
+ * @retval None
+ */
+static void led_task_handler(void* parameters)
+{
+
+
+    while(1)
+    {
+
+        if(button_status_flag == PRESSED)
+        {
+            // turn on the green LED
+            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,  GPIO_PIN_SET);
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port,   LED_RED_Pin,    GPIO_PIN_SET);
+            HAL_GPIO_WritePin(LED_BLUE_GPIO_Port,  LED_BLUE_Pin,   GPIO_PIN_SET);
+
+        }else
+        {
+            // turn off the led
+            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,  GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(LED_RED_GPIO_Port,   LED_RED_Pin,    GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(LED_BLUE_GPIO_Port,  LED_BLUE_Pin,   GPIO_PIN_RESET);
+        }
+    }
+}
+
+/**
+ * @brief  FreeRTOS task: BUTTON
+ * @details Button Task should continuously poll the button status of the board
+ * and if pressed it should update the flag variable.
+ *
+ * @retval None
+ */
+static void button_task_handler(void* parameters)
+{
+
+    while(1)
+    {
+        if(HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
+        {
+            // button is pressed
+            button_status_flag = PRESSED;
+        }else
+        {
+            // button is  not pressed
+            button_status_flag = NOT_PRESSED;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------*/
 /* USER CODE END 4 */
 
 /**
