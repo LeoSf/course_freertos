@@ -42,7 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+//uint8_t button_status_flag = NOT_PRESSED;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -145,10 +145,10 @@ void UsageFault_Handler(void)
 //void SVC_Handler(void)
 //{
 //  /* USER CODE BEGIN SVCall_IRQn 0 */
-//
+////
 //  /* USER CODE END SVCall_IRQn 0 */
 //  /* USER CODE BEGIN SVCall_IRQn 1 */
-//
+////
 //  /* USER CODE END SVCall_IRQn 1 */
 //}
 
@@ -171,10 +171,10 @@ void DebugMon_Handler(void)
 //void PendSV_Handler(void)
 //{
 //  /* USER CODE BEGIN PendSV_IRQn 0 */
-//
+////
 //  /* USER CODE END PendSV_IRQn 0 */
 //  /* USER CODE BEGIN PendSV_IRQn 1 */
-//
+////
 //  /* USER CODE END PendSV_IRQn 1 */
 //}
 
@@ -184,11 +184,11 @@ void DebugMon_Handler(void)
 //void SysTick_Handler(void)
 //{
 //  /* USER CODE BEGIN SysTick_IRQn 0 */
-//
+////
 //  /* USER CODE END SysTick_IRQn 0 */
 //  HAL_IncTick();
 //  /* USER CODE BEGIN SysTick_IRQn 1 */
-//
+////
 //  /* USER CODE END SysTick_IRQn 1 */
 //}
 
@@ -198,6 +198,22 @@ void DebugMon_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32l5xx.s).                    */
 /******************************************************************************/
+
+/**
+ * @brief This function handles EXTI line13 interrupt.
+ */
+void EXTI13_IRQHandler(void)
+{
+    /* USER CODE BEGIN EXTI13_IRQn 0 */
+
+    /* USER CODE END EXTI13_IRQn 0 */
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+    /* USER CODE BEGIN EXTI13_IRQn 1 */
+
+    button_status_flag ^=1;
+
+    /* USER CODE END EXTI13_IRQn 1 */
+}
 
 /* USER CODE BEGIN 1 */
 

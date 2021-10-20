@@ -37,12 +37,19 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+#define TRUE            1
+#define FALSE           0
 
+#define AVAILABLE       TRUE
+#define NOT_AVAILABLE   FALSE
+
+#define PRESSED         TRUE
+#define NOT_PRESSED     FALSE
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern uint8_t button_status_flag;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -60,6 +67,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define USER_BUTTON_Pin GPIO_PIN_13
 #define USER_BUTTON_GPIO_Port GPIOC
+#define USER_BUTTON_EXTI_IRQn EXTI13_IRQn
 #define ST_LINK_VCP_TX_Pin GPIO_PIN_7
 #define ST_LINK_VCP_TX_GPIO_Port GPIOG
 #define ST_LINK_VCP_RX_Pin GPIO_PIN_8
