@@ -81,7 +81,13 @@ Additional information:
 
 /* adding an extra define for sysview */
 
- #define SEGGER_SYSVIEW_RTT_BUFFER_SIZE          (1*1024)
+#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE          (16*1024)
+
+#define SEGGER_SYSVIEW_RTT_CHANNEL              1
+
+#define SEGGER_SYSVIEW_USE_STATIC_BUFFER        1
+
+#define SEGGER_SYSVIEW_POST_MORTEM_MODE         0
 
 
 //#define SEGGER_UART_REC 1
