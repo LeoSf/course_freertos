@@ -760,6 +760,10 @@ uint32_t ulPreviousMask;
 		else
 		{
 		    traceISR_EXIT();
+
+		    /* if there is only one task, to display properly the trace with segger.
+		     * This is a dummy call just to help segger to log the LED-task trace*/
+		    vTaskSwitchContext();   //
 		}
 	}
 	portCLEAR_INTERRUPT_MASK_FROM_ISR( ulPreviousMask );
