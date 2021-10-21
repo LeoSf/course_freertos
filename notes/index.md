@@ -142,3 +142,38 @@ ProjectName > Properties > C/C++ Build > Settings > **MCU GCC Assembler > Includ
 
 Since the project is created with the Cube MX tool from STM, all the source code is generated automatically. This produces that when we include FreeRTOS the systic hander for the interruption is coded in the FreeRTOS directory. As a consequence, we have to comment the code inside the file **stm32l5xx_it.c** under the section **Cortex Processor Interruption and Exception Handlers**.
 
+
+### Segger continuous recording
+
+Once the Jlink SW package is installed, you can lauch the reflash utility.
+
+```
+[1] Upgrade to J-Link
+Preparing for FW update (can take up to 10 seconds)...O.K.
+Identifying ST-LINK variant...O.K.: ST-LINK/V2-1
+Performing firmware update...O.K.
+```
+Now J-Link software is running in the board.
+
+You don't need to close the window.
+
+
+Open SeegerViewer. Menu **Target** \> **Start recording**.  
+* Select J-Link
+> If everything is working propperly a configuration windows will open. If not, unplug the board and plug it again.
+* Config:
+    * J-Link Connection: USB
+    * Target Connection: Cortex-M33
+    * Target interface: SWD
+    * Interface speed \[KHz\]: 8000
+    * RTT Control Block Detection:
+        * Address (could fail)
+        * Search range: 0x20000000 256000
+
+In the search range we use the base address of the SRAM and the size to search for the RTT buffer.
+
+**To restore the ST-Link firmware, use again the reflash utility**
+```
+[3] Restore ST-Link
+```
+**Note**: If the board is not working properly after reflashing the ST-Link SW, just use the firmware for the specific board. In this case, **stsw-link007** (firmware programmer).
