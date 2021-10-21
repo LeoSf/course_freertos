@@ -23,6 +23,7 @@
 #include "stm32l5xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -205,13 +206,14 @@ void DebugMon_Handler(void)
 void EXTI13_IRQHandler(void)
 {
     /* USER CODE BEGIN EXTI13_IRQn 0 */
-
+    traceISR_ENTER();
     /* USER CODE END EXTI13_IRQn 0 */
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
     /* USER CODE BEGIN EXTI13_IRQn 1 */
 
 //    button_status_flag ^=1;
     button_handler(NULL);
+    traceISR_EXIT();
 
     /* USER CODE END EXTI13_IRQn 1 */
 }
