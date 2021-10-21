@@ -89,7 +89,7 @@ static void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void sendString(char *msg);
 static void led_task_handler(void* parameters);
-static void button_task_handler(void* parameters);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -151,16 +151,6 @@ int main(void)
             1,                              // priority of the task
             NULL);                          // handler to the TCB (task controller block)
     //            &task1_handle);               // handler to the TCB (task controller block)
-
-    configASSERT(status == pdPASS);
-
-    status = xTaskCreate(
-            button_task_handler,
-            "BUTTON-TASK",
-            configMINIMAL_STACK_SIZE,
-            "BUTTON-Task [info]",
-            1,
-            NULL);
 
     configASSERT(status == pdPASS);
 
@@ -372,26 +362,27 @@ static void led_task_handler(void* parameters)
 }
 
 /**
- * @brief  FreeRTOS task: BUTTON
- * @details Button Task should continuously poll the button status of the board
+ * @brief  handler for user push button (external interrupt)
+ * @details Button function should check the button status of the board
  * and if pressed it should update the flag variable.
  *
  * @retval None
  */
-static void button_task_handler(void* parameters)
+void button_handler(void* parameters)
 {
 
-    while(1)
+    static uint8_t last_state = NOT_PRESSED;
+
+    if(HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET && (last_state == NOT_PRESSED))
     {
-        if(HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
-        {
-            // button is pressed
-            button_status_flag = PRESSED;
-        }else
-        {
-            // button is  not pressed
-            button_status_flag = NOT_PRESSED;
-        }
+        // button is pressed
+        button_status_flag = PRESSED;
+        last_state = PRESSED;
+    }else
+    {
+        // button is  not pressed
+        button_status_flag = NOT_PRESSED;
+        last_state = NOT_PRESSED;
     }
 }
 

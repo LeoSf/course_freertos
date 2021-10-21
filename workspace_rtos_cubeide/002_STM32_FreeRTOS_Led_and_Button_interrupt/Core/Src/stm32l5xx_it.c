@@ -210,7 +210,8 @@ void EXTI13_IRQHandler(void)
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
     /* USER CODE BEGIN EXTI13_IRQn 1 */
 
-    button_status_flag ^=1;
+//    button_status_flag ^=1;
+    button_handler(NULL);
 
     /* USER CODE END EXTI13_IRQn 1 */
 }

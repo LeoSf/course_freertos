@@ -61,7 +61,7 @@ extern uint8_t button_status_flag;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void button_handler(void* parameters);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
