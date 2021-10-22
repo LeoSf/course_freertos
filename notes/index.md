@@ -142,6 +142,9 @@ ProjectName > Properties > C/C++ Build > Settings > **MCU GCC Assembler > Includ
 
 Since the project is created with the Cube MX tool from STM, all the source code is generated automatically. This produces that when we include FreeRTOS the systic hander for the interruption is coded in the FreeRTOS directory. As a consequence, we have to comment the code inside the file **stm32l5xx_it.c** under the section **Cortex Processor Interruption and Exception Handlers**.
 
+* void SVC_Handler(void)
+* void PendSV_Handler(void)
+* void SysTick_Handler(void)
 
 ### Segger continuous recording
 
