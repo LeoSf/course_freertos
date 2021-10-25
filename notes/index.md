@@ -180,3 +180,27 @@ In the search range we use the base address of the SRAM and the size to search f
 [3] Restore ST-Link
 ```
 **Note**: If the board is not working properly after reflashing the ST-Link SW, just use the firmware for the specific board. In this case, **stsw-link007** (firmware programmer).
+
+
+#### Segger trace configuration
+
+* variable Name : _SEGGER_RTT
+    * aUp
+        * aUp[1]
+            * pBuffer: address
+            * WrOff: written values
+
+Then in the memory browser tab, select **RAW binary**, use the addres, and the length. Select a filename and path with extension **.SVdat** 
+
+
+In the file **SEGGER_SYSVIEW_Conf.h** add: 
+
+```c
+#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE          (1*1024)
+
+#define SEGGER_SYSVIEW_RTT_CHANNEL              1
+
+#define SEGGER_SYSVIEW_USE_STATIC_BUFFER        1
+
+#define SEGGER_SYSVIEW_POST_MORTEM_MODE         0
+```
