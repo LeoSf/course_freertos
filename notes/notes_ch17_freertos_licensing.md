@@ -38,4 +38,6 @@ source: [https://www.freertos.org/openrtos.html](https://www.freertos.org/openrt
 
 ### 17.2. FreeRTOS API Interface
 
+![api_interface](img/api_interface.png)
 
+Note: Remember that FreeRTOS kernel doesn't contain any code related to hardware. You have to fit in the BSP (board support package) layer to access the peripherals of the hardware.
