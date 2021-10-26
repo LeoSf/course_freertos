@@ -63,7 +63,7 @@ extern const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI;
 **********************************************************************
 */
 // The application name to be displayed in SystemViewer
-#define SYSVIEW_APP_NAME        "FreeRTOS PoC UART Application"
+#define SYSVIEW_APP_NAME        "FreeRTOS - 003. Task notifications"
 
 // The target device name
 #define SYSVIEW_DEVICE_NAME     "NUCLEO-L552ZE-Q"

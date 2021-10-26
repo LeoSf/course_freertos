@@ -213,6 +213,9 @@ After the API call, the notification reaches the task, and the LED-TASK is put i
 
 Since the SysTick realizes a task in the ready queue, it calls the scheduler for a context switch.
 
+Trace of the app:
+
+![trace_003_notifications](img/trace_003_notifications.png)
 
 
 
