@@ -2,7 +2,7 @@
 /**
  ******************************************************************************
  * @file           : main.c
- * @brief          : Example 001: Led and button FreeRTOS tasks with pooling
+ * @brief          : Example 003: Led and button with task notifications
  *                   for NUCLEO-L552.
  *
  * @details TODO
@@ -54,18 +54,22 @@
 #include "task.h"
 #include <stdio.h>
 #include <string.h>
+
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define TRUE            1
-#define FALSE           0
+//#define TRUE                1
+//#define FALSE               0
 
-#define AVAILABLE       TRUE
-#define NOT_AVAILABLE   FALSE
+#define AVAILABLE           true
+#define NOT_AVAILABLE       false
 
-#define PRESSED         TRUE
-#define NOT_PRESSED     FALSE
+#define PRESSED             true
+#define NOT_PRESSED         false
+
+#define DEBOUNCE_DELAY_MS   10
 
 #define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)       /* Data Watchpoint and Trace Unit */
 /* USER CODE END PTD */
@@ -83,6 +87,7 @@
 UART_HandleTypeDef hlpuart1;
 
 /* USER CODE BEGIN PV */
+TaskHandle_t xTask_led_handle;
 char usr_msg[250];
 uint8_t UART_ACCESS_KEY = AVAILABLE;
 
@@ -95,8 +100,11 @@ static void MX_GPIO_Init(void);
 static void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void sendString(char *msg);
-static void led_task_handler(void* parameters);
-static void button_task_handler(void* parameters);
+void rtos_delay_ms(uint32_t delay_in_ms);
+void rtos_delay_us(uint32_t delay_in_us);
+
+static void vtask_led_handler(void* parameters);
+static void vtask_button_handler(void* parameters);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -111,12 +119,9 @@ static void button_task_handler(void* parameters);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-    //    TaskHandle_t task1_handle;
-    //    TaskHandle_t task2_handle;
-
     BaseType_t status;
 
-    char msg_program_init [] = "[info] ---- Example 001: Led and button tasks using pooling ----\r\n";
+    char msg_program_init [] = "[info] ---- Example 003: Led and button with task notifications ----\r\n";
 
     /* USER CODE END 1 */
 
@@ -150,22 +155,21 @@ int main(void)
     SEGGER_SYSVIEW_Start();                 // Start recording with SEGGER
 
     status = xTaskCreate(
-            led_task_handler,               // name of the task handler
+            vtask_led_handler,               // name of the task handler
             "LED-TASK",                     // descriptive name. (Could be NULL)
             configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
             "LED-Task [info]",              // pvParameters
-            1,                              // priority of the task
-            NULL);                          // handler to the TCB (task controller block)
-    //            &task1_handle);               // handler to the TCB (task controller block)
+            2,                              // priority of the task
+            &xTask_led_handle);             // handler to the TCB (task controller block)
 
     configASSERT(status == pdPASS);
 
     status = xTaskCreate(
-            button_task_handler,
+            vtask_button_handler,
             "BUTTON-TASK",
             configMINIMAL_STACK_SIZE,
             "BUTTON-Task [info]",
-            1,
+            2,
             NULL);
 
     configASSERT(status == pdPASS);
@@ -345,57 +349,88 @@ void sendString(char *msg)
 
 /**
  * @brief  FreeRTOS task: LED
- * @details Led Task should turn on the LED if button flag is SET, otherwise it
- * should turn off the LED.
+ * @details Led Task should toogle led states after a notification is received.
  *
  * @retval None
  */
-static void led_task_handler(void* parameters)
+static void vtask_led_handler(void* parameters)
 {
 
+    uint32_t current_notification_value = 0;
 
     while(1)
     {
 
-        if(button_status_flag == PRESSED)
+        //lets wait until we receive any notification event from button_Task
+        if ( xTaskNotifyWait(0, 0, &current_notification_value, portMAX_DELAY) == pdTRUE )
         {
-            // turn on the green LED
-            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,  GPIO_PIN_SET);
-            HAL_GPIO_WritePin(LED_RED_GPIO_Port,   LED_RED_Pin,    GPIO_PIN_SET);
-            HAL_GPIO_WritePin(LED_BLUE_GPIO_Port,  LED_BLUE_Pin,   GPIO_PIN_SET);
+            //we received the notification . so lets toggle the LED
+            HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+            HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+            HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 
-        }else
-        {
-            // turn off the led
-            HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,  GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(LED_RED_GPIO_Port,   LED_RED_Pin,    GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(LED_BLUE_GPIO_Port,  LED_BLUE_Pin,   GPIO_PIN_RESET);
+            sprintf(usr_msg,"Notification is received : Button press count : %ld \r\n", current_notification_value);
+            sendString(usr_msg);
         }
     }
 }
 
 /**
  * @brief  FreeRTOS task: BUTTON
- * @details Button Task should continuously poll the button status of the board
- * and if pressed it should update the flag variable.
+ * @details Button Task should check the rising edge of the user button send a notification to the
+ *          led task.
  *
  * @retval None
  */
-static void button_task_handler(void* parameters)
+static void vtask_button_handler(void* parameters)
 {
+    static bool lastState = false;
 
     while(1)
     {
-        if(HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
+        // rising edge detector logic with debouncing
+        if( HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) && (lastState == false))
         {
-            // button is pressed
-            button_status_flag = PRESSED;
-        }else
+            //lets send the notification to led_task
+            xTaskNotify(xTask_led_handle, 0x0, eIncrement);
+
+            lastState = true;
+
+            rtos_delay_ms(DEBOUNCE_DELAY_MS);
+
+        }else if( HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_RESET)
         {
-            // button is  not pressed
-            button_status_flag = NOT_PRESSED;
+            lastState = false;
+            rtos_delay_ms(DEBOUNCE_DELAY_MS);
         }
+        else
+        {
+            rtos_delay_ms (DEBOUNCE_DELAY_MS);
+        }
+
+
     }
+}
+
+
+void rtos_delay_ms(uint32_t delay_in_ms)
+{
+    uint32_t current_tick_count = xTaskGetTickCount();
+
+    uint32_t delay_in_ticks = (delay_in_ms * configTICK_RATE_HZ ) /1000 ;
+
+    while(xTaskGetTickCount() <  (current_tick_count + delay_in_ticks));
+
+}
+
+void rtos_delay_us(uint32_t delay_in_us)
+{
+    uint32_t current_tick_count = xTaskGetTickCount();
+
+    uint32_t delay_in_ticks = (delay_in_us * configTICK_RATE_HZ ) ;
+
+    while(xTaskGetTickCount() <  (current_tick_count + delay_in_ticks));
+
 }
 
 /* --------------------------------------------------------------------------*/
