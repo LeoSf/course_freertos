@@ -86,6 +86,37 @@ When you create a task dynamically, a TCB and associated stack will be created i
 #### FreeRTOS Heap management schemes 
 
 ![heap_files](img/heap_files.png)
-
+  
 
 ### 18.3. Overview of FreeRTOS Synchronization and mutual exclusion Services
+
+
+![synchro_1](img/synchro_1.png)
+
+![synchro_2](img/synchro_2.png)
+
+#### How to achieve this signaling?
+
+* Events (or Event Flags)
+* Semaphores (Counting and binary)
+* Queues and Message Queues
+* Pipes
+* Mailboxes
+* Signals (UNIX like signals)
+* Mutex
+
+All these software subsystems support signaling hence can be used in Synchronization purposes.
+
+#### Mutual Exclusion Services of FreeRTOS
+
+**Mutual exclusion**  
+means that only a single thread should be able to access the shared resource at any given point of time. This avoids the race conditions between threads acquiring the resource. Usually you have to lock that resource before using and unlock it after you finish accessing the resource.
+
+**Synchronization**  
+means that you synchronize/order the access of multiple threads to the shared resource.
+
+![example_mutex_code](img/example_mutex_code.png)
+
+**Mutual Exclusion can be achived with:**
+* mutex
+* semaphore
