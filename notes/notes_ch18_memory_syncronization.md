@@ -59,11 +59,33 @@ Whereas stack is managed by SP and dedicated instructions like PUSH and POP, the
 * fragmented over time as blocks of memory are allocated 
 
 
-
-
-
-
-
 ### 18.2. FreeRTOS Heap and Stack Management
+
+![app_temp_monitoring](img/app_temp_monitoring.png)
+
+#### Where do you think task's TCB and its associated stack will be created?
+
+There are 2 options:
+1. if you use dynamic creation method then they will be created in the heap memory of the RAM 
+2. if you create them statically then they will be created in other part of the RAM except heap and stack space
+
+For this example:
+* each task will have its own task space. 
+* The size of the stack have to be mention during creation of the task
+
+#### Who decides the starting address and size of the heap?
+
+
+* By default the **FreeRTOS heap** is declared by FreeRTOS kernel
+* Setting **configAPPLICATION_ALLOCATED_HEAP** to **1** allows the heap to instead be declared by the application.
+
+When you create a task dynamically, a TCB and associated stack will be created in the heap space of the RAM.
+
+![app_temp_monitoring_2](img/app_temp_monitoring_2.png)
+
+#### FreeRTOS Heap management schemes 
+
+![heap_files](img/heap_files.png)
+
 
 ### 18.3. Overview of FreeRTOS Synchronization and mutual exclusion Services
