@@ -367,7 +367,8 @@ static void vtask_1_handler(void* parameters)
 
     while(1)
     {
-        rtos_delay_ms(250);
+//        rtos_delay_ms(250);
+        vTaskDelay(250);
         HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
     }
 }
