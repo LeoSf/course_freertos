@@ -109,7 +109,7 @@ int main(void)
 
     BaseType_t status;
 
-    char msg_program_init [] = "[info] ---- Example 001: Led and button tasks using interrupts ----\r\n";
+    char msg_program_init [] = "[info] ---- Example 002: Led and button tasks using interrupts ----\r\n";
 
 
     /* USER CODE END 1 */
