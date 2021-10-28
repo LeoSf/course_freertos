@@ -58,6 +58,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define USER_BUTTON_Pin GPIO_PIN_13
+#define USER_BUTTON_GPIO_Port GPIOC
 #define ST_LINK_VCP_TX_Pin GPIO_PIN_7
 #define ST_LINK_VCP_TX_GPIO_Port GPIOG
 #define ST_LINK_VCP_RX_Pin GPIO_PIN_8

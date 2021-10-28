@@ -63,7 +63,7 @@ extern const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI;
 **********************************************************************
 */
 // The application name to be displayed in SystemViewer
-#define SYSVIEW_APP_NAME        "FreeRTOS - 003. Task notifications"
+#define SYSVIEW_APP_NAME        "Example 004: Deleting task in FreeRTOs"
 
 // The target device name
 #define SYSVIEW_DEVICE_NAME     "NUCLEO-L552ZE-Q"
