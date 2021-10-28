@@ -397,7 +397,8 @@ static void vtask_2_handler(void* parameters)
         }else
         {
             // button is  not pressed
-            rtos_delay_ms(500);
+            rtos_delay_ms(500);         // blocking
+            // vTaskDelay(500);         // non-blocking
             HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
         }
 
