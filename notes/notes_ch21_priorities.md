@@ -5,10 +5,14 @@ August 2021
 
 ## Ch21. ARM Cortex M Interrupt Priority and  FreeRTOS Task Priority
 
-
 ### 21.1. FreeRTOS Hardware interrupt Configurable items
 
-### 21.2. FreeRTOS Hardware interrupt Configurable items contd.
+
+* ConfigKERNEL_INTERRUPT_PRIORITY 
+* configMAX_SYSCALL_INTERRUPT_PRIORITY
+
+
+### 21.2. FreeRTOS Hardware interrupt Co nfigurable items contd.
 
 ### 21.3. Priority of freeRTOS Tasks
 
@@ -18,4 +22,4 @@ August 2021
 
 ### 21.6. Exercise  Task Priority Implementation and testing
 
-### 21.7. Exercise  Task Priority analyzing the trace
+### 21.7. Exercise  Task Priority analyzing the  
