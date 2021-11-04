@@ -7,7 +7,7 @@ sysmem.c
 
 misc/*
 
-*/Core/Startup/*
+#*/Core/Startup/*
 
 */Drivers/*
 */MDK-ARM/*
