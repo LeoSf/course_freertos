@@ -38,6 +38,8 @@
  *      SEGGER_SYSVIEW_PrintfTarget("Task-1 is yielding");
  *      snprintf(msg, 100, "%s\n", (char*)parameters);
  *      sendString(msg);
+ *      traceISR_ENTER();
+ *      traceISR_EXIT();
  *      traceISR_EXIT_TO_SCHEDULER();
  *      taskYIELD();
 
@@ -423,7 +425,6 @@ static void check_switch_priority(void)
     {
         t1 = xTaskGetHandle("TASK-1");
         t2 = xTaskGetHandle("TASK-2");
-
 
         p1 = uxTaskPriorityGet(t1);
         p2 = uxTaskPriorityGet(t2);
