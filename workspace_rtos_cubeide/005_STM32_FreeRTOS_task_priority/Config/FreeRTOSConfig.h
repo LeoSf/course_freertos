@@ -122,6 +122,9 @@ to exclude the API function. */
 #define INCLUDE_xTaskGetCurrentTaskHandle    1
 #define INCLUDE_eTaskGetState                1
 
+// new - not by default
+#define INCLUDE_xTaskGetHandle               1
+
 
 // new custom macros for SEEGER
 #define INCLUDE_xTaskGetIdle TaskHandle     1

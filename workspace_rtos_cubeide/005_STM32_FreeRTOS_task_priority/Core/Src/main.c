@@ -106,7 +106,7 @@ void rtos_delay_us(uint32_t delay_in_us);
 
 static void vtask_1_handler(void* parameters);
 static void vtask_2_handler(void* parameters);
-void check_switch_priority(void);
+static void check_switch_priority(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -414,45 +414,26 @@ static void vtask_2_handler(void* parameters)
     }
 }
 
-void check_switch_priority(void)
+static void check_switch_priority(void)
 {
     UBaseType_t p1, p2;
-    TaskHandle_t t1, t2, curr;
-
-//    BaseType_t switch_priority = 0;
-
-//    portENTER_CRITICAL();
-//    if(status_button){
-//        status_button = 0;
-//        switch_priority = 1;
-//    }
-//    portEXIT_CRITICAL();
+    TaskHandle_t t1, t2;
 
     if(switch_priority == true)
     {
-//        t1 = xTaskGetHandle("TASK-1");
-//        t2 = xTaskGetHandle("TASK-2");
-//
-//        p1 = uxTaskPriorityGet(t1);
-//        p2 = uxTaskPriorityGet(t2);
+        t1 = xTaskGetHandle("TASK-1");
+        t2 = xTaskGetHandle("TASK-2");
 
-        t1 = xTask_1_handle;
-        t2 = xTask_2_handle;
 
         p1 = uxTaskPriorityGet(t1);
         p2 = uxTaskPriorityGet(t2);
 
-        curr = xTaskGetCurrentTaskHandle();
-
-        if(curr == t1){
-            vTaskPrioritySet(t1, p2);
-            vTaskPrioritySet(t2, p1);
-        }else{
-            vTaskPrioritySet(t2, p1);
-            vTaskPrioritySet(t1, p2);
-        }
+        portENTER_CRITICAL();
+        vTaskPrioritySet(t2, p1);
+        vTaskPrioritySet(t1, p2);
 
         switch_priority = false;
+        portEXIT_CRITICAL();
     }
 
 }
