@@ -2,32 +2,75 @@
 /**
  ******************************************************************************
  * @file           : main.c
- * @brief          : Main program body
+ * @brief          : Example 005: Priorities in FreeRTOS tasks for NUCLEO-L552.
+ *
+ * @details TODO
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+ * <h2><center>&copy; Copyright 2021 Leandro Medus.
  * All rights reserved.</center></h2>
  *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  ******************************************************************************
  */
+
+/*
+ * Other useful functions:
+ *
+ *      SEGGER_SYSVIEW_PrintfTarget("Task-1 is yielding");
+ *      snprintf(msg, 100, "%s\n", (char*)parameters);
+ *      sendString(msg);
+ *      traceISR_EXIT_TO_SCHEDULER();
+ *      taskYIELD();
+
+ * */
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "FreeRTOS.h"
+#include "task.h"
+#include <stdio.h>
+#include <string.h>
 
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+//#define TRUE                1
+//#define FALSE               0
 
+#define AVAILABLE           true
+#define NOT_AVAILABLE       false
+
+#define PRESSED             true
+#define NOT_PRESSED         false
+
+#define DEBOUNCE_DELAY_MS   10
+
+#define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)       /* Data Watchpoint and Trace Unit */
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -43,7 +86,11 @@
 UART_HandleTypeDef hlpuart1;
 
 /* USER CODE BEGIN PV */
+TaskHandle_t xTask_led_handle;
+char usr_msg[250];
+uint8_t UART_ACCESS_KEY = AVAILABLE;
 
+uint8_t button_status_flag = NOT_PRESSED;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -51,7 +98,12 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
+void sendString(char *msg);
+void rtos_delay_ms(uint32_t delay_in_ms);
+void rtos_delay_us(uint32_t delay_in_us);
 
+static void vtask_1_handler(void* parameters);
+static void vtask_2_handler(void* parameters);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -66,6 +118,9 @@ static void MX_LPUART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
+    BaseType_t status;
+
+    char msg_program_init [] = "[info] ---- Example 005: Changin priorities in FreeRTOS tasks ----\r\n";
 
     /* USER CODE END 1 */
 
@@ -90,6 +145,35 @@ int main(void)
     MX_LPUART1_UART_Init();
     /* USER CODE BEGIN 2 */
 
+    DWT_CTRL |= ( 1 << 0);                  //Enable the CYCCNT counter. (to maintain time stamps in Segger)
+
+    sendString(msg_program_init);
+
+    SEGGER_SYSVIEW_Conf();
+
+    SEGGER_SYSVIEW_Start();                 // Start recording with SEGGER
+
+    status = xTaskCreate(
+            vtask_1_handler,               // name of the task handler
+            "TASK-1",                     // descriptive name. (Could be NULL)
+            configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
+            "LED-Task [info]",              // pvParameters
+            1,                              // priority of the task
+            &xTask_led_handle);             // handler to the TCB (task controller block)
+
+    configASSERT(status == pdPASS);
+
+    status = xTaskCreate(
+            vtask_2_handler,
+            "TASK-2",
+            configMINIMAL_STACK_SIZE,
+            "BUTTON-Task [info]",
+            2,
+            NULL);
+
+    configASSERT(status == pdPASS);
+
+    vTaskStartScheduler();                  // start the freeRTOS scheduler
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -259,6 +343,77 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+/* --------------------------------------------------------------------------*/
+
+/**
+ * @brief  This function send a string using the UART
+ * @retval None
+ */
+void sendString(char *msg)
+{
+    sprintf(usr_msg, msg);
+
+    // sending a string
+    HAL_UART_Transmit(&hlpuart1, (uint8_t *) usr_msg, strlen(usr_msg), 100);
+}
+
+/**
+ * @brief  FreeRTOS task: Task-1 (blink 2 Hz)
+ * @details Task-1 toggles led state every 250 ms.
+ *
+ * @retval None
+ */
+static void vtask_1_handler(void* parameters)
+{
+
+    sprintf(usr_msg,"Task-1 is running.\r\n");
+    sendString(usr_msg);
+
+    while(1)
+    {
+        // TODO
+    }
+}
+
+/**
+ * @brief  FreeRTOS task: Task-1 (blink 1 Hz)
+ * @details Task-1 toggles led state every 500 ms.
+ *
+ * @retval None
+ */
+static void vtask_2_handler(void* parameters)
+{
+    sprintf(usr_msg,"Task-2 is running.\r\n");
+    sendString(usr_msg);
+
+    while(1)
+    {
+        // TODO
+    }
+}
+
+
+void rtos_delay_ms(uint32_t delay_in_ms)
+{
+    uint32_t current_tick_count = xTaskGetTickCount();
+
+    uint32_t delay_in_ticks = (delay_in_ms * configTICK_RATE_HZ ) /1000 ;
+
+    while(xTaskGetTickCount() <  (current_tick_count + delay_in_ticks));
+
+}
+
+void rtos_delay_us(uint32_t delay_in_us)
+{
+    uint32_t current_tick_count = xTaskGetTickCount();
+
+    uint32_t delay_in_ticks = (delay_in_us * configTICK_RATE_HZ ) ;
+
+    while(xTaskGetTickCount() <  (current_tick_count + delay_in_ticks));
+
+}
+
+/* --------------------------------------------------------------------------*/
 /* USER CODE END 4 */
 
 /**
