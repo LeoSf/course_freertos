@@ -53,7 +53,6 @@
 #include "task.h"
 #include <stdio.h>
 #include <string.h>
-
 #include <stdbool.h>
 /* USER CODE END Includes */
 
@@ -86,11 +85,14 @@
 UART_HandleTypeDef hlpuart1;
 
 /* USER CODE BEGIN PV */
-TaskHandle_t xTask_led_handle;
+TaskHandle_t xTask_1_handle;
+TaskHandle_t xTask_2_handle;
 char usr_msg[250];
-uint8_t UART_ACCESS_KEY = AVAILABLE;
 
+uint8_t UART_ACCESS_KEY = AVAILABLE;
 uint8_t button_status_flag = NOT_PRESSED;
+
+bool switch_priority = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,6 +106,7 @@ void rtos_delay_us(uint32_t delay_in_us);
 
 static void vtask_1_handler(void* parameters);
 static void vtask_2_handler(void* parameters);
+void check_switch_priority(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -158,8 +161,8 @@ int main(void)
             "TASK-1",                     // descriptive name. (Could be NULL)
             configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
             "LED-Task [info]",              // pvParameters
-            1,                              // priority of the task
-            &xTask_led_handle);             // handler to the TCB (task controller block)
+            2,                              // priority of the task
+            &xTask_1_handle);             // handler to the TCB (task controller block)
 
     configASSERT(status == pdPASS);
 
@@ -168,8 +171,8 @@ int main(void)
             "TASK-2",
             configMINIMAL_STACK_SIZE,
             "BUTTON-Task [info]",
-            2,
-            NULL);
+            3,
+            &xTask_2_handle);
 
     configASSERT(status == pdPASS);
 
@@ -358,8 +361,8 @@ void sendString(char *msg)
 }
 
 /**
- * @brief  FreeRTOS task: Task-1 (blink 2 Hz)
- * @details Task-1 toggles led state every 250 ms.
+ * @brief  FreeRTOS task: Task-1 (blink 4 Hz)
+ * @details Task-1 toggles led state every 125 ms.
  *
  * @retval None
  */
@@ -369,15 +372,24 @@ static void vtask_1_handler(void* parameters)
     sprintf(usr_msg,"Task-1 is running.\r\n");
     sendString(usr_msg);
 
+    sprintf(usr_msg,"Task-1 priority %ld.\r\n", uxTaskPriorityGet(xTask_1_handle));
+    sendString(usr_msg);
+
+    sprintf(usr_msg,"Task-2 priority %ld.\r\n", uxTaskPriorityGet(xTask_2_handle));
+    sendString(usr_msg);
+
     while(1)
     {
-        // TODO
+        check_switch_priority();
+
+        rtos_delay_ms(125);     // blocking
+        HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
     }
 }
 
 /**
- * @brief  FreeRTOS task: Task-1 (blink 1 Hz)
- * @details Task-1 toggles led state every 500 ms.
+ * @brief  FreeRTOS task: Task-2 (blink 1 Hz)
+ * @details Task-2 toggles led state every 500 ms.
  *
  * @retval None
  */
@@ -386,10 +398,63 @@ static void vtask_2_handler(void* parameters)
     sprintf(usr_msg,"Task-2 is running.\r\n");
     sendString(usr_msg);
 
+    sprintf(usr_msg,"Task-1 priority %ld.\r\n", uxTaskPriorityGet(xTask_1_handle));
+    sendString(usr_msg);
+
+    sprintf(usr_msg,"Task-2 priority %ld.\r\n", uxTaskPriorityGet(xTask_2_handle));
+    sendString(usr_msg);
+
     while(1)
     {
-        // TODO
+
+        check_switch_priority();
+
+        rtos_delay_ms(500); // blocking
+        HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
     }
+}
+
+void check_switch_priority(void)
+{
+    UBaseType_t p1, p2;
+    TaskHandle_t t1, t2, curr;
+
+//    BaseType_t switch_priority = 0;
+
+//    portENTER_CRITICAL();
+//    if(status_button){
+//        status_button = 0;
+//        switch_priority = 1;
+//    }
+//    portEXIT_CRITICAL();
+
+    if(switch_priority == true)
+    {
+//        t1 = xTaskGetHandle("TASK-1");
+//        t2 = xTaskGetHandle("TASK-2");
+//
+//        p1 = uxTaskPriorityGet(t1);
+//        p2 = uxTaskPriorityGet(t2);
+
+        t1 = xTask_1_handle;
+        t2 = xTask_2_handle;
+
+        p1 = uxTaskPriorityGet(t1);
+        p2 = uxTaskPriorityGet(t2);
+
+        curr = xTaskGetCurrentTaskHandle();
+
+        if(curr == t1){
+            vTaskPrioritySet(t1, p2);
+            vTaskPrioritySet(t2, p1);
+        }else{
+            vTaskPrioritySet(t2, p1);
+            vTaskPrioritySet(t1, p2);
+        }
+
+        switch_priority = false;
+    }
+
 }
 
 

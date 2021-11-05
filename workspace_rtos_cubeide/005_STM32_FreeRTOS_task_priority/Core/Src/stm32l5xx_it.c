@@ -23,6 +23,7 @@
 #include "stm32l5xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +59,7 @@
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-
+bool switch_priority;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -172,7 +173,8 @@ void ISR_usr_button(void)
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
     /* USER CODE BEGIN EXTI13_IRQn 1 */
 
-    HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+//    HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+    switch_priority = true;
 
     /* USER CODE END EXTI13_IRQn 1 */
 }
