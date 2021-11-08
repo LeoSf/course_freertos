@@ -22,4 +22,11 @@ August 2021
 
 ### 21.6. Exercise  Task Priority Implementation and testing
 
-### 21.7. Exercise  Task Priority analyzing the  
+### 21.7. Exercise  Task Priority analyzing the trace
+
+![log_cambio_prioridades](img/log_cambio_prioridades.png)
+
+![log_cambio_prioridades_300ms](img/log_cambio_prioridades_300ms.png)
+
+![log_cambio_prioridades_Correcto](img/log_cambio_prioridades_Correcto.png)
+
