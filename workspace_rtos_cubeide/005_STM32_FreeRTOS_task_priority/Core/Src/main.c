@@ -446,7 +446,10 @@ void rtos_delay_ms(uint32_t delay_in_ms)
 
     uint32_t delay_in_ticks = (delay_in_ms * configTICK_RATE_HZ ) /1000 ;
 
-    while(xTaskGetTickCount() <  (current_tick_count + delay_in_ticks));
+    while(xTaskGetTickCount() <  (current_tick_count + delay_in_ticks))
+    {
+        check_switch_priority();
+    }
 
 }
 
