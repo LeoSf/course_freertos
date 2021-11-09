@@ -386,6 +386,17 @@ static void vtask_2_handler(void* parameters)
 }
 
 
+void vApplicationIdleHook(void)
+{
+    // send the CPU to normal sleep mode
+    __WFI();
+
+    /*
+     * Remember that when you send the uC to sleep mode, you can't get a trace.
+     */
+}
+
+
 /* --------------------------------------------------------------------------*/
 /* USER CODE END 4 */
 
