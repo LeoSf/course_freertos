@@ -159,7 +159,7 @@ int main(void)
             vtask_1_handler,               // name of the task handler
             "TASK-1",                     // descriptive name. (Could be NULL)
             configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
-            "LED-Task [info]",              // pvParameters
+            "LED-1-Task [info]",              // pvParameters
             2,                              // priority of the task
             &xTask_1_handle);             // handler to the TCB (task controller block)
 
@@ -169,7 +169,7 @@ int main(void)
             vtask_2_handler,
             "TASK-2",
             configMINIMAL_STACK_SIZE,
-            "BUTTON-Task [info]",
+            "LED-2-Task [info]",
             3,
             &xTask_2_handle);
 
@@ -350,25 +350,38 @@ void sendString(char *msg)
 }
 
 /**
- * @brief  FreeRTOS task:
+ * @brief  FreeRTOS task: print the LED status with the uart
  * @details
  *
  * @retval None
  */
 static void vtask_1_handler(void* parameters)
 {
+    while(true)
+    {
+        sprintf(usr_msg,"Status of the LED is: %d.\r\n", HAL_GPIO_ReadPin(LED_BLUE_GPIO_Port, LED_BLUE_Pin));
+        sendString(usr_msg);
 
+        // vTaskDelay(1000);   // this is number of ticks
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
 
 /**
- * @brief  FreeRTOS task:
+ * @brief  FreeRTOS task: toogle the blue LED.
  * @details
  *
  * @retval None
  */
 static void vtask_2_handler(void* parameters)
 {
+    while(true)
+    {
+        HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 
+        // vTaskDelay(1000);   // this is number of ticks
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
 
 
