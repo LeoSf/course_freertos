@@ -53,6 +53,7 @@ void MemManage_Handler(void);
 void BusFault_Handler(void);
 void UsageFault_Handler(void);
 void DebugMon_Handler(void);
+void LPUART1_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 //void ISR_usr_button(void);
 /* USER CODE END EFP */

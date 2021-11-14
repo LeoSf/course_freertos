@@ -61,6 +61,9 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
+#include "timers.h"
+
 #include <stdio.h>
 #include <string.h>
 //#include <stdbool.h>
@@ -68,14 +71,22 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define true                1
-#define false               0
+#define TRUE                1
+#define FALSE               0
 
-#define AVAILABLE           true
-#define NOT_AVAILABLE       false
+#define AVAILABLE           TRUE
+#define NOT_AVAILABLE       FALSE
 
-#define PRESSED             true
-#define NOT_PRESSED         false
+#define PRESSED             TRUE
+#define NOT_PRESSED         FALSE
+
+// App commands
+#define LED_ON_COMMAND              1
+#define LED_OFF_COMMAND             2
+#define LED_TOGGLE_COMMAND          3
+#define LED_TOGGLE_STOP_COMMAND     4
+#define LED_READ_STATUS_COMMAND     5
+#define RTC_READ_DATE_TIME_COMMAND  6
 
 #define DEBOUNCE_DELAY_MS   10
 
@@ -95,12 +106,45 @@
 UART_HandleTypeDef hlpuart1;
 
 /* USER CODE BEGIN PV */
-TaskHandle_t xTask_1_handle;
-TaskHandle_t xTask_2_handle;
-char usr_msg[250];
+
+char usr_msg[250] = {0};
 
 uint8_t UART_ACCESS_KEY = AVAILABLE;
 uint8_t button_status_flag = NOT_PRESSED;
+
+// task handles
+TaskHandle_t xTask_1_handle = NULL;
+TaskHandle_t xTask_2_handle = NULL;
+TaskHandle_t xTask_3_handle = NULL;
+TaskHandle_t xTask_4_handle = NULL;
+
+// Queue handle
+QueueHandle_t command_queue = NULL;
+QueueHandle_t uart_write_queue = NULL;
+
+// Software timer handler
+TimerHandle_t led_timer_handle = NULL;
+
+// Command structure
+typedef struct APP_CMD
+{
+    uint8_t COMMAND_NUM;            // command number of the user
+    uint8_t COMMAND_ARGS[10];       // associated argument
+}APP_CMD_t;
+
+uint8_t command_buffer[20];
+uint8_t command_len =0;
+
+//This is the menu
+char menu[]={"\
+\r\nLED_ON             ----> 1 \
+\r\nLED_OFF            ----> 2 \
+\r\nLED_TOGGLE         ----> 3 \
+\r\nLED_TOGGLE_OFF     ----> 4 \
+\r\nLED_READ_STATUS    ----> 5 \
+\r\nRTC_PRINT_DATETIME ----> 6 \
+\r\nEXIT_APP           ----> 0 \
+\r\nType your option here : "};
 
 /* USER CODE END PV */
 
@@ -109,10 +153,12 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void sendString(char *msg);
 
-static void vtask_1_handler(void* parameters);
-static void vtask_2_handler(void* parameters);
+void sendString(char *msg);
+static void vtask_1_menu_display(void* parameters);
+static void vtask_2_cmd_handling(void* parameters);
+static void vtask_3_cmd_processing(void * parameters);
+static void vtask_4_uart_write(void * parameters);
 
 /* USER CODE END PFP */
 
@@ -155,35 +201,73 @@ int main(void)
     MX_LPUART1_UART_Init();
     /* USER CODE BEGIN 2 */
 
-    DWT_CTRL |= ( 1 << 0);                  //Enable the CYCCNT counter. (to maintain time stamps in Segger)
+    DWT_CTRL |= ( 1 << 0);                      // Enable the CYCCNT counter. (to maintain time stamps in Segger)
 
     sendString(msg_program_init);
 
     SEGGER_SYSVIEW_Conf();
 
-    SEGGER_SYSVIEW_Start();                 // Start recording with SEGGER
+    SEGGER_SYSVIEW_Start();                     // Start recording with SEGGER
 
     status = xTaskCreate(
-            vtask_1_handler,                // name of the task handler
-            "TASK-1",                       // descriptive name. (Could be NULL)
+            vtask_1_menu_display,           // name of the task handler
+            "TASK-1-MENU",                  // descriptive name. (Could be NULL)
             configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
             "Task-1 [info]",                // pvParameters
-            2,                              // priority of the task
+            1,                              // priority of the task
             &xTask_1_handle);               // handler to the TCB (task controller block)
 
     configASSERT(status == pdPASS);
 
     status = xTaskCreate(
-            vtask_2_handler,
-            "TASK-2",
+            vtask_2_cmd_handling,
+            "TASK-2-CMD-HANDLING",
             configMINIMAL_STACK_SIZE,
             "Task-2 [info]",
-            3,
+            1,
             &xTask_2_handle);
 
     configASSERT(status == pdPASS);
 
-    vTaskStartScheduler();                  // start the freeRTOS scheduler
+    status = xTaskCreate(
+            vtask_3_cmd_processing,
+            "TASK-3-CMD-PROCESS",
+            configMINIMAL_STACK_SIZE,
+            "Task-3 [info]",
+            1,
+            &xTask_3_handle);
+
+    configASSERT(status == pdPASS);
+
+    status = xTaskCreate(
+            vtask_4_uart_write,
+            "TASK-4-UART-WRITE",
+            configMINIMAL_STACK_SIZE,
+            "Task-4 [info]",
+            1,
+            &xTask_4_handle);
+
+    configASSERT(status == pdPASS);
+
+
+    // Queues
+    command_queue = xQueueCreate( 10, sizeof(APP_CMD_t *));     // a memory pointer is 4 bytes = 40 bytes instead 110
+    uart_write_queue = xQueueCreate( 10, sizeof(char *));          // we only need only the staring addr of the msg
+
+    if(command_queue != NULL && uart_write_queue != NULL)
+    {
+        vTaskStartScheduler();                  // start the freeRTOS scheduler
+    }
+    else
+    {
+        sprintf(usr_msg,"Queue creation failed\r\n");
+        sendString(usr_msg);
+    }
+
+
+
+
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -289,6 +373,8 @@ static void MX_LPUART1_UART_Init(void)
     }
     /* USER CODE BEGIN LPUART1_Init 2 */
 
+    // TODO enable interrupt from here ??
+
     /* USER CODE END LPUART1_Init 2 */
 
 }
@@ -358,34 +444,68 @@ void sendString(char *msg)
 }
 
 /**
- * @brief  FreeRTOS task:
+ * @brief
  * @details
  *
  * @retval None
  */
-static void vtask_1_handler(void* parameters)
+static void vtask_1_menu_display(void* parameters)
 {
-    while(true)
+    while(TRUE)
     {
 
     }
 }
 
 /**
- * @brief  FreeRTOS task:
+ * @brief
  * @details
  *
  * @retval None
  */
-static void vtask_2_handler(void* parameters)
+static void vtask_2_cmd_handling(void* parameters)
 {
-    while(true)
+    while(TRUE)
+    {
+
+    }
+}
+
+/**
+ * @brief
+ * @details
+ *
+ * @retval None
+ */
+static void vtask_3_cmd_processing(void * parameters)
+{
+    while(TRUE)
+    {
+
+    }
+}
+
+/**
+ * @brief
+ * @details
+ *
+ * @retval None
+ */
+static void vtask_4_uart_write(void * parameters)
+{
+    while(TRUE)
     {
 
     }
 }
 
 
+/**
+ * @brief
+ * @details
+ *
+ * @retval None
+ */
 void vApplicationIdleHook(void)
 {
     /*
