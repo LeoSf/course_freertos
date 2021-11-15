@@ -172,6 +172,8 @@ void LPUART1_IRQHandler(void)
     HAL_UART_IRQHandler(&hlpuart1);
     /* USER CODE BEGIN LPUART1_IRQn 1 */
 
+    LPUART_ISR();
+
     /* USER CODE END LPUART1_IRQn 1 */
 }
 

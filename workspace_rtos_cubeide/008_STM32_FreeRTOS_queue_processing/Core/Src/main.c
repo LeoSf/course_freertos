@@ -133,7 +133,7 @@ typedef struct APP_CMD
 }APP_CMD_t;
 
 uint8_t command_buffer[20];
-uint8_t command_len =0;
+uint8_t command_len = 0;
 
 //This is the menu
 char menu[]={"\
@@ -250,8 +250,10 @@ int main(void)
     configASSERT(status == pdPASS);
 
 
-    // Queues
+    // Command Queue
     command_queue = xQueueCreate( 10, sizeof(APP_CMD_t *));     // a memory pointer is 4 bytes = 40 bytes instead 110
+
+    // Write Queue
     uart_write_queue = xQueueCreate( 10, sizeof(char *));          // we only need only the staring addr of the msg
 
     if(command_queue != NULL && uart_write_queue != NULL)
@@ -274,6 +276,8 @@ int main(void)
     /* USER CODE BEGIN WHILE */
     while (1)
     {
+        /* Execution must not reach this point */
+
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -513,6 +517,46 @@ void vApplicationIdleHook(void)
      */
 }
 
+
+
+void LPUART_ISR(void)
+{
+    uint16_t data_byte;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    // TODO fix this with HAL implementation
+    if( USART_GetFlagStatus(USART2,USART_FLAG_RXNE) )
+    {
+        // TODO fix this with HAL implementation
+        // a data byte is received from the user
+        data_byte = USART_ReceiveData(USART2);
+
+        command_buffer[command_len++] = (data_byte & 0xFF) ;
+
+        if(data_byte == '\r')
+        {
+            //then user is finished entering the data
+
+            //reset the command_len variable
+            command_len = 0;
+
+            //lets notify the command handling task
+            xTaskNotifyFromISR(xTask_2_handle, 0, eNoAction, &xHigherPriorityTaskWoken);
+
+            xTaskNotifyFromISR(xTask_1_handle, 0, eNoAction, &xHigherPriorityTaskWoken);
+        }
+
+    }
+
+    // if the above freertos apis wake up any higher priority task, then yield the processor to the
+    //higher priority task which is just woken up.
+
+    if(xHigherPriorityTaskWoken)
+    {
+        taskYIELD();
+    }
+
+}
 
 /* --------------------------------------------------------------------------*/
 /* USER CODE END 4 */
