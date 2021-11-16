@@ -377,7 +377,9 @@ static void MX_LPUART1_UART_Init(void)
     }
     /* USER CODE BEGIN LPUART1_Init 2 */
 
-    // TODO enable interrupt from here ??
+    // enabling interrupt for the flag
+    __HAL_UART_ENABLE_IT(&hlpuart1, UART_IT_RXNE);
+
 
     /* USER CODE END LPUART1_Init 2 */
 
@@ -524,32 +526,24 @@ void LPUART_ISR(void)
     uint16_t data_byte;
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-    // TODO fix this with HAL implementation
-    if( USART_GetFlagStatus(USART2,USART_FLAG_RXNE) )
+    if( __HAL_UART_GET_FLAG(&hlpuart1, UART_FLAG_RXNE) )     // a data byte is received from the user
     {
-        // TODO fix this with HAL implementation
-        // a data byte is received from the user
-        data_byte = USART_ReceiveData(USART2);
+        data_byte = (uint8_t) hlpuart1.Instance->RDR;
 
         command_buffer[command_len++] = (data_byte & 0xFF) ;
 
-        if(data_byte == '\r')
+        if(data_byte == '\r')       // user finished entering the data
         {
-            //then user is finished entering the data
+            command_len = 0;        // reset the command_len variable
 
-            //reset the command_len variable
-            command_len = 0;
-
-            //lets notify the command handling task
+            // lets notify the command handling task
             xTaskNotifyFromISR(xTask_2_handle, 0, eNoAction, &xHigherPriorityTaskWoken);
-
             xTaskNotifyFromISR(xTask_1_handle, 0, eNoAction, &xHigherPriorityTaskWoken);
         }
-
     }
 
     // if the above freertos apis wake up any higher priority task, then yield the processor to the
-    //higher priority task which is just woken up.
+    // higher priority task which is just woken up.
 
     if(xHigherPriorityTaskWoken)
     {
@@ -557,6 +551,7 @@ void LPUART_ISR(void)
     }
 
 }
+
 
 /* --------------------------------------------------------------------------*/
 /* USER CODE END 4 */
@@ -572,6 +567,7 @@ void Error_Handler(void)
     __disable_irq();
     while (1)
     {
+        __NOP();
     }
     /* USER CODE END Error_Handler_Debug */
 }
