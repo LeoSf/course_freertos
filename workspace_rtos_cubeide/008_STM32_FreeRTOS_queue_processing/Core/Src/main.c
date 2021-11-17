@@ -115,10 +115,10 @@ uint8_t UART_ACCESS_KEY = AVAILABLE;
 uint8_t button_status_flag = NOT_PRESSED;
 
 // task handles
-TaskHandle_t xTask_1_handle = NULL;
-TaskHandle_t xTask_2_handle = NULL;
-TaskHandle_t xTask_3_handle = NULL;
-TaskHandle_t xTask_4_handle = NULL;
+TaskHandle_t xTask_menu_dislpay_handle = NULL;
+TaskHandle_t xTask_cmd_handling_handle = NULL;
+TaskHandle_t xTask_cmd_processing_handle = NULL;
+TaskHandle_t xTask_uart_write_handle = NULL;
 
 // Queue handle
 QueueHandle_t command_queue = NULL;
@@ -217,7 +217,7 @@ int main(void)
             configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
             "Task-1 [info]",                // pvParameters
             1,                              // priority of the task
-            &xTask_1_handle);               // handler to the TCB (task controller block)
+            &xTask_menu_dislpay_handle);               // handler to the TCB (task controller block)
 
     configASSERT(status == pdPASS);
 
@@ -227,7 +227,7 @@ int main(void)
             configMINIMAL_STACK_SIZE,
             "Task-2 [info]",
             1,
-            &xTask_2_handle);
+            &xTask_cmd_handling_handle);
 
     configASSERT(status == pdPASS);
 
@@ -237,7 +237,7 @@ int main(void)
             configMINIMAL_STACK_SIZE,
             "Task-3 [info]",
             1,
-            &xTask_3_handle);
+            &xTask_cmd_processing_handle);
 
     configASSERT(status == pdPASS);
 
@@ -247,7 +247,7 @@ int main(void)
             configMINIMAL_STACK_SIZE,
             "Task-4 [info]",
             1,
-            &xTask_4_handle);
+            &xTask_uart_write_handle);
 
     configASSERT(status == pdPASS);
 
@@ -531,7 +531,12 @@ void vApplicationIdleHook(void)
 }
 
 
-
+/**
+ * @brief LPUART interrupt service routine when the Rx flag not empy is set
+ * @details
+ *
+ * @retval None
+ */
 void LPUART_ISR(void)
 {
     uint32_t data_byte;
@@ -547,9 +552,8 @@ void LPUART_ISR(void)
         {
             command_len = 0;        // reset the command_len variable
 
-            // lets notify the command handling task
-            xTaskNotifyFromISR(xTask_2_handle, 0, eNoAction, &xHigherPriorityTaskWoken);
-            xTaskNotifyFromISR(xTask_1_handle, 0, eNoAction, &xHigherPriorityTaskWoken);
+            xTaskNotifyFromISR(xTask_cmd_handling_handle, 0, eNoAction, &xHigherPriorityTaskWoken);     // notify the command handling task
+            xTaskNotifyFromISR(xTask_menu_dislpay_handle, 0, eNoAction, &xHigherPriorityTaskWoken);     // notify the menu display task for the next iteration
         }
     }
 
