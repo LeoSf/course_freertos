@@ -12,7 +12,7 @@
  *          LED_STATUS_READ
  *          RTC_DATETIME_READ
  *
- *          The command should be sent to the board via UART from the user.
+ *          The command is sent to the board via UART from the user.
  ******************************************************************************
  * @attention
  *
@@ -161,6 +161,8 @@ static void vtask_1_menu_display(void* parameters);
 static void vtask_2_cmd_handling(void* parameters);
 static void vtask_3_cmd_processing(void * parameters);
 static void vtask_4_uart_write(void * parameters);
+static uint8_t getCommandCode(uint8_t *buffer);
+static void getArguments(uint8_t *buffer);
 
 /* USER CODE END PFP */
 
@@ -471,15 +473,32 @@ static void vtask_1_menu_display(void* parameters)
 }
 
 /**
- * @brief
+ * @brief Command handling task
  * @details
  *
  * @retval None
  */
 static void vtask_2_cmd_handling(void* parameters)
 {
-    while(TRUE)
+    uint8_t command_code = 0;
+
+    APP_CMD_t *new_cmd;
+
+    while(1)
     {
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);             // wait for a command
+
+        // 1. send command to queue
+        new_cmd = (APP_CMD_t*) pvPortMalloc(sizeof(APP_CMD_t));
+
+        taskENTER_CRITICAL();                                   // entering critical section
+        command_code = getCommandCode(command_buffer);
+        new_cmd->COMMAND_NUM = command_code;
+        getArguments(new_cmd->COMMAND_ARGS);                    // TODO
+        taskEXIT_CRITICAL();
+
+        // send the command to the command queue
+        xQueueSend(command_queue, &new_cmd, portMAX_DELAY);
 
     }
 }
@@ -516,6 +535,29 @@ static void vtask_4_uart_write(void * parameters)
     }
 }
 
+/**
+ * @brief Get command code from buffer
+ * @details
+ *
+ * @retval None
+ */
+static uint8_t getCommandCode(uint8_t *buffer)
+{
+
+    return buffer[0]-48;    // to convert ASCII to a uint8_t
+}
+
+/**
+ * @brief Get argument of a command from the buffer
+ * @details
+ *
+ * @retval None
+ */
+static void getArguments(uint8_t *buffer)
+{
+
+
+}
 
 /**
  * @brief
@@ -553,11 +595,11 @@ void LPUART_ISR(void)
             command_len = 0;        // reset the command_len variable
 
             xTaskNotifyFromISR(xTask_cmd_handling_handle, 0, eNoAction, &xHigherPriorityTaskWoken);     // notify the command handling task
-            xTaskNotifyFromISR(xTask_menu_dislpay_handle, 0, eNoAction, &xHigherPriorityTaskWoken);     // notify the menu display task for the next iteration
+            xTaskNotifyFromISR(xTask_menu_dislpay_handle, 0, eNoAction, &xHigherPriorityTaskWoken);     // notify the menu display task for next iteration
         }
     }
 
-    // if the above freertos apis wake up any higher priority task, then yield the processor to the
+    // if the above FreeRTOS APIs wake up any higher priority task, then yield the processor to the
     // higher priority task which is just woken up.
 
     if(xHigherPriorityTaskWoken)
