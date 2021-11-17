@@ -88,6 +88,8 @@
 #define LED_READ_STATUS_COMMAND     5
 #define RTC_READ_DATE_TIME_COMMAND  6
 
+#define BUFFER_CMD_SIZE             20
+
 #define DEBOUNCE_DELAY_MS   10
 
 #define DWT_CTRL    (*(volatile uint32_t*)0xE0001000)       /* Data Watchpoint and Trace Unit */
@@ -132,7 +134,7 @@ typedef struct APP_CMD
     uint8_t COMMAND_ARGS[10];       // associated argument
 }APP_CMD_t;
 
-uint8_t command_buffer[20];
+uint8_t command_buffer[BUFFER_CMD_SIZE];
 uint8_t command_len = 0;
 
 //This is the menu
@@ -450,16 +452,21 @@ void sendString(char *msg)
 }
 
 /**
- * @brief
+ * @brief Menu display task
  * @details
  *
  * @retval None
  */
 static void vtask_1_menu_display(void* parameters)
 {
+    char *pData = menu;
+
     while(TRUE)
     {
+        xQueueSend(uart_write_queue, &pData, portMAX_DELAY);
 
+        // lets wait here until someone notifies.
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
     }
 }
 
@@ -523,14 +530,14 @@ void vApplicationIdleHook(void)
 
 void LPUART_ISR(void)
 {
-    uint16_t data_byte;
+    uint32_t data_byte;
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
     if( __HAL_UART_GET_FLAG(&hlpuart1, UART_FLAG_RXNE) )     // a data byte is received from the user
     {
-        data_byte = (uint8_t) hlpuart1.Instance->RDR;
+        data_byte = (uint32_t) hlpuart1.Instance->RDR;
 
-        command_buffer[command_len++] = (data_byte & 0xFF) ;
+        command_buffer[command_len++] = (data_byte & 0x000000FF) ;
 
         if(data_byte == '\r')       // user finished entering the data
         {
