@@ -453,7 +453,7 @@ void sendString(char *msg)
 
 /**
  * @brief Menu display task
- * @details
+ * @details This task writes into the queue all the data to send later by other task to the UART
  *
  * @retval None
  */
@@ -499,16 +499,20 @@ static void vtask_3_cmd_processing(void * parameters)
 }
 
 /**
- * @brief
- * @details
+ * @brief UART write task
+ * @details This task send the information from the queue to the UART
  *
  * @retval None
  */
 static void vtask_4_uart_write(void * parameters)
 {
-    while(TRUE)
-    {
+    char *pData = NULL;
 
+    while(1)
+    {
+        xQueueReceive(uart_write_queue, &pData, portMAX_DELAY);
+
+        sendString(pData);
     }
 }
 
