@@ -654,7 +654,7 @@ static uint8_t getCommandCode(uint8_t *buffer)
 }
 
 /**
- * @brief Get argument of a command from the buffer
+ * @brief Get the argument of a command from the buffer
  * @details
  *
  * @retval None
@@ -715,27 +715,47 @@ void LPUART_ISR(void)
 
 }
 
-
+/**
+ * @brief turn on the blue led
+ * @details
+ *
+ * @retval None
+ */
 void make_led_on(void)
 {
     HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_SET);
 }
 
-
+/**
+ * @brief turn off the blue led
+ * @details
+ *
+ * @retval None
+ */
 void make_led_off(void)
 {
     HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_RESET);
 }
 
 
-
+/**
+ * @brief toggle the blue led
+ * @details
+ *
+ * @retval None
+ */
 void led_toggle(TimerHandle_t xTimer)
 {
     HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 }
 
 
-
+/**
+ * @brief read the blue led status
+ * @details
+ *
+ * @retval None
+ */
 void read_led_status(char *task_msg)
 {
 
@@ -744,6 +764,12 @@ void read_led_status(char *task_msg)
     xQueueSend(uart_write_queue, &task_msg, portMAX_DELAY);
 }
 
+/**
+ * @brief start toggling the blue led at a fixed interval by software
+ * @details
+ *
+ * @retval None
+ */
 void led_toggle_start(uint32_t duration)
 {
 
@@ -762,12 +788,23 @@ void led_toggle_start(uint32_t duration)
     }
 }
 
-
+/**
+ * @brief stop toggling the blue led
+ * @details
+ *
+ * @retval None
+ */
 void led_toggle_stop(void)
 {
     xTimerStop(led_timer_handle, portMAX_DELAY);
 }
 
+/**
+ * @brief read current data and time from the RTC
+ * @details
+ *
+ * @retval None
+ */
 void read_rtc_info(char *task_msg)
 {
 
@@ -785,6 +822,12 @@ void read_rtc_info(char *task_msg)
     xQueueSend(uart_write_queue,&task_msg,portMAX_DELAY);
 }
 
+/**
+ * @brief print an error message due to invalid command received
+ * @details
+ *
+ * @retval None
+ */
 void print_error_message(char *task_msg)
 {
     sprintf( task_msg,"\r\nInvalid command received\r\n");
