@@ -87,6 +87,7 @@
 #define LED_TOGGLE_STOP_COMMAND     4
 #define LED_READ_STATUS_COMMAND     5
 #define RTC_READ_DATE_TIME_COMMAND  6
+#define EXIT_CMD                    0
 
 #define BUFFER_CMD_SIZE             20
 
@@ -604,6 +605,13 @@ static void vtask_3_cmd_processing(void * parameters)
         else if(new_cmd->COMMAND_NUM == RTC_READ_DATE_TIME_COMMAND )
         {
             read_rtc_info(task_msg);
+        }else if(new_cmd->COMMAND_NUM == EXIT_CMD )
+        {
+           /* TODO
+            * delete all tasks
+            * disable interrupts
+            * send the uC to low power mode in the idle task
+            * */
         }else
         {
             print_error_message(task_msg);
@@ -770,7 +778,7 @@ void read_rtc_info(char *task_msg)
     HAL_RTC_GetTime(&hrtc, &RTC_time, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&hrtc, &RTC_date, RTC_FORMAT_BIN);
 
-    sprintf(task_msg,"\r\nTime: %02d:%02d:%02d \r\n Date : %02d-%2d-%2d \r\n", \
+    sprintf(task_msg,"\r\nTime: %02d:%02d:%02d \r\n Date : %02d-%02d-%04d \r\n", \
             RTC_time.Hours, RTC_time.Minutes, RTC_time.Seconds, \
             RTC_date.Date, RTC_date.Month, RTC_date.Year );
 
