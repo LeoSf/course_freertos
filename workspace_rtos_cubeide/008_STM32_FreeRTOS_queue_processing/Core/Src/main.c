@@ -107,6 +107,8 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef hlpuart1;
 
+RTC_HandleTypeDef hrtc;
+
 /* USER CODE BEGIN PV */
 
 char usr_msg[250] = {0};
@@ -154,6 +156,7 @@ char menu[]={"\
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_LPUART1_UART_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 void sendString(char *msg);
@@ -170,6 +173,7 @@ void make_led_off(void);
 void read_led_status(char *task_msg);
 void led_toggle_start(uint32_t duration);
 void led_toggle_stop(void);
+void read_rtc_info(char *task_msg);
 void print_error_message(char *task_msg);
 
 /* USER CODE END PFP */
@@ -211,6 +215,7 @@ int main(void)
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
     MX_LPUART1_UART_Init();
+    MX_RTC_Init();
     /* USER CODE BEGIN 2 */
 
     DWT_CTRL |= ( 1 << 0);                      // Enable the CYCCNT counter. (to maintain time stamps in Segger)
@@ -279,9 +284,6 @@ int main(void)
     }
 
 
-
-
-
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -312,10 +314,15 @@ void SystemClock_Config(void)
     {
         Error_Handler();
     }
+    /** Configure LSE Drive Capability
+     */
+    HAL_PWR_EnableBkUpAccess();
+    __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     RCC_OscInitStruct.MSIState = RCC_MSI_ON;
     RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
     RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
@@ -394,6 +401,52 @@ static void MX_LPUART1_UART_Init(void)
 
 
     /* USER CODE END LPUART1_Init 2 */
+
+}
+
+/**
+ * @brief RTC Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_RTC_Init(void)
+{
+
+    /* USER CODE BEGIN RTC_Init 0 */
+
+    /* USER CODE END RTC_Init 0 */
+
+    RTC_PrivilegeStateTypeDef privilegeState = {0};
+
+    /* USER CODE BEGIN RTC_Init 1 */
+
+    /* USER CODE END RTC_Init 1 */
+    /** Initialize RTC Only
+     */
+    hrtc.Instance = RTC;
+    hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+    hrtc.Init.AsynchPrediv = 127;
+    hrtc.Init.SynchPrediv = 255;
+    hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+    hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+    hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+    hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+    hrtc.Init.OutPutPullUp = RTC_OUTPUT_PULLUP_NONE;
+    if (HAL_RTC_Init(&hrtc) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    privilegeState.rtcPrivilegeFull = RTC_PRIVILEGE_FULL_NO;
+    privilegeState.backupRegisterPrivZone = RTC_PRIVILEGE_BKUP_ZONE_NONE;
+    privilegeState.backupRegisterStartZone2 = RTC_BKP_DR0;
+    privilegeState.backupRegisterStartZone3 = RTC_BKP_DR0;
+    if (HAL_RTCEx_PrivilegeModeSet(&hrtc, &privilegeState) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN RTC_Init 2 */
+
+    /* USER CODE END RTC_Init 2 */
 
 }
 
@@ -526,7 +579,7 @@ static void vtask_3_cmd_processing(void * parameters)
 
     while(1)
     {
-        xQueueReceive(command_queue,(void*)&new_cmd,portMAX_DELAY);
+        xQueueReceive(command_queue, (void*) &new_cmd, portMAX_DELAY);
 
         if(new_cmd->COMMAND_NUM == LED_ON_COMMAND)
         {
@@ -550,13 +603,13 @@ static void vtask_3_cmd_processing(void * parameters)
         }
         else if(new_cmd->COMMAND_NUM == RTC_READ_DATE_TIME_COMMAND )
         {
-//            read_rtc_info(task_msg);
+            read_rtc_info(task_msg);
         }else
         {
             print_error_message(task_msg);
         }
 
-        //lets free the allocated memory for the new command
+        //  free the allocated memory for the new command
         vPortFree(new_cmd);
 
     }
@@ -704,7 +757,24 @@ void led_toggle_start(uint32_t duration)
 
 void led_toggle_stop(void)
 {
-     xTimerStop(led_timer_handle, portMAX_DELAY);
+    xTimerStop(led_timer_handle, portMAX_DELAY);
+}
+
+void read_rtc_info(char *task_msg)
+{
+
+    RTC_TimeTypeDef RTC_time;
+    RTC_DateTypeDef RTC_date;
+
+    // read time and date from RTC peripheral of the microcontroller
+    HAL_RTC_GetTime(&hrtc, &RTC_time, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, &RTC_date, RTC_FORMAT_BIN);
+
+    sprintf(task_msg,"\r\nTime: %02d:%02d:%02d \r\n Date : %02d-%2d-%2d \r\n", \
+            RTC_time.Hours, RTC_time.Minutes, RTC_time.Seconds, \
+            RTC_date.Date, RTC_date.Month, RTC_date.Year );
+
+    xQueueSend(uart_write_queue,&task_msg,portMAX_DELAY);
 }
 
 void print_error_message(char *task_msg)
