@@ -164,6 +164,11 @@ static void vtask_4_uart_write(void * parameters);
 static uint8_t getCommandCode(uint8_t *buffer);
 static void getArguments(uint8_t *buffer);
 
+void make_led_on(void);
+void make_led_off(void);
+void read_led_status(char *task_msg);
+void print_error_message(char *task_msg);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -214,11 +219,11 @@ int main(void)
     SEGGER_SYSVIEW_Start();                     // Start recording with SEGGER
 
     status = xTaskCreate(
-            vtask_1_menu_display,           // name of the task handler
-            "TASK-1-MENU",                  // descriptive name. (Could be NULL)
-            configMINIMAL_STACK_SIZE,       // stack space ([words] = 4*words [bytes])
-            "Task-1 [info]",                // pvParameters
-            1,                              // priority of the task
+            vtask_1_menu_display,               // name of the task handler
+            "TASK-1-MENU",                      // descriptive name. (Could be NULL)
+            configMINIMAL_STACK_SIZE,           // stack space ([words] = 4*words [bytes])
+            "Task-1 [info]",                    // pvParameters
+            1,                                  // priority of the task
             &xTask_menu_dislpay_handle);               // handler to the TCB (task controller block)
 
     configASSERT(status == pdPASS);
@@ -228,7 +233,7 @@ int main(void)
             "TASK-2-CMD-HANDLING",
             configMINIMAL_STACK_SIZE,
             "Task-2 [info]",
-            1,
+            2,
             &xTask_cmd_handling_handle);
 
     configASSERT(status == pdPASS);
@@ -238,7 +243,7 @@ int main(void)
             "TASK-3-CMD-PROCESS",
             configMINIMAL_STACK_SIZE,
             "Task-3 [info]",
-            1,
+            2,
             &xTask_cmd_processing_handle);
 
     configASSERT(status == pdPASS);
@@ -248,7 +253,7 @@ int main(void)
             "TASK-4-UART-WRITE",
             configMINIMAL_STACK_SIZE,
             "Task-4 [info]",
-            1,
+            2,
             &xTask_uart_write_handle);
 
     configASSERT(status == pdPASS);
@@ -511,8 +516,45 @@ static void vtask_2_cmd_handling(void* parameters)
  */
 static void vtask_3_cmd_processing(void * parameters)
 {
-    while(TRUE)
+    APP_CMD_t *new_cmd;
+    char task_msg[50];
+
+//    uint32_t toggle_duration = pdMS_TO_TICKS(500);
+
+    while(1)
     {
+        xQueueReceive(command_queue,(void*)&new_cmd,portMAX_DELAY);
+
+        if(new_cmd->COMMAND_NUM == LED_ON_COMMAND)
+        {
+            make_led_on();
+        }
+        else if(new_cmd->COMMAND_NUM == LED_OFF_COMMAND)
+        {
+            make_led_off();
+        }
+        else if(new_cmd->COMMAND_NUM == LED_TOGGLE_COMMAND)
+        {
+//            led_toggle_start(toggle_duration);
+        }
+        else if(new_cmd->COMMAND_NUM == LED_TOGGLE_STOP_COMMAND)
+        {
+//            led_toggle_stop();
+        }
+        else if(new_cmd->COMMAND_NUM == LED_READ_STATUS_COMMAND)
+        {
+            read_led_status(task_msg);
+        }
+        else if(new_cmd->COMMAND_NUM == RTC_READ_DATE_TIME_COMMAND )
+        {
+//            read_rtc_info(task_msg);
+        }else
+        {
+//            print_error_message(task_msg);
+        }
+
+        //lets free the allocated memory for the new command
+        vPortFree(new_cmd);
 
     }
 }
@@ -609,6 +651,40 @@ void LPUART_ISR(void)
 
 }
 
+
+void make_led_on(void)
+{
+    HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_SET);
+}
+
+
+void make_led_off(void)
+{
+    HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_RESET);
+}
+
+
+
+void led_toggle(TimerHandle_t xTimer)
+{
+    HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+}
+
+
+
+void read_led_status(char *task_msg)
+{
+
+    sprintf(task_msg , "\r\nLED status is : %d\r\n", HAL_GPIO_ReadPin(LED_BLUE_GPIO_Port, LED_BLUE_Pin));
+
+    xQueueSend(uart_write_queue, &task_msg, portMAX_DELAY);
+}
+
+void print_error_message(char *task_msg)
+{
+    sprintf( task_msg,"\r\nInvalid command received\r\n");
+    xQueueSend(uart_write_queue, &task_msg, portMAX_DELAY);
+}
 
 /* --------------------------------------------------------------------------*/
 /* USER CODE END 4 */
