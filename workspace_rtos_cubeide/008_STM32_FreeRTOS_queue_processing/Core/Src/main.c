@@ -164,9 +164,12 @@ static void vtask_4_uart_write(void * parameters);
 static uint8_t getCommandCode(uint8_t *buffer);
 static void getArguments(uint8_t *buffer);
 
+// helper functions
 void make_led_on(void);
 void make_led_off(void);
 void read_led_status(char *task_msg);
+void led_toggle_start(uint32_t duration);
+void led_toggle_stop(void);
 void print_error_message(char *task_msg);
 
 /* USER CODE END PFP */
@@ -519,7 +522,7 @@ static void vtask_3_cmd_processing(void * parameters)
     APP_CMD_t *new_cmd;
     char task_msg[50];
 
-//    uint32_t toggle_duration = pdMS_TO_TICKS(500);
+    uint32_t toggle_duration = pdMS_TO_TICKS(500);
 
     while(1)
     {
@@ -535,11 +538,11 @@ static void vtask_3_cmd_processing(void * parameters)
         }
         else if(new_cmd->COMMAND_NUM == LED_TOGGLE_COMMAND)
         {
-//            led_toggle_start(toggle_duration);
+            led_toggle_start(toggle_duration);
         }
         else if(new_cmd->COMMAND_NUM == LED_TOGGLE_STOP_COMMAND)
         {
-//            led_toggle_stop();
+            led_toggle_stop();
         }
         else if(new_cmd->COMMAND_NUM == LED_READ_STATUS_COMMAND)
         {
@@ -550,7 +553,7 @@ static void vtask_3_cmd_processing(void * parameters)
 //            read_rtc_info(task_msg);
         }else
         {
-//            print_error_message(task_msg);
+            print_error_message(task_msg);
         }
 
         //lets free the allocated memory for the new command
@@ -678,6 +681,30 @@ void read_led_status(char *task_msg)
     sprintf(task_msg , "\r\nLED status is : %d\r\n", HAL_GPIO_ReadPin(LED_BLUE_GPIO_Port, LED_BLUE_Pin));
 
     xQueueSend(uart_write_queue, &task_msg, portMAX_DELAY);
+}
+
+void led_toggle_start(uint32_t duration)
+{
+
+    if(led_timer_handle == NULL)
+    {
+        // 1. lets create the software timer
+        led_timer_handle = xTimerCreate("LED-TIMER", duration, pdTRUE, NULL, led_toggle);
+
+        // 2. start the software timer
+        xTimerStart(led_timer_handle, portMAX_DELAY);
+    }
+    else
+    {
+        // start the software timer
+        xTimerStart(led_timer_handle, portMAX_DELAY);
+    }
+}
+
+
+void led_toggle_stop(void)
+{
+     xTimerStop(led_timer_handle, portMAX_DELAY);
 }
 
 void print_error_message(char *task_msg)
