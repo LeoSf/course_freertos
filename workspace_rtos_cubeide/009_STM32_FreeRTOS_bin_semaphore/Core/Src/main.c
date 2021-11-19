@@ -484,15 +484,26 @@ void vManagerTask( void *pvParameters )
     }
 }
 
-
+/**
+ * @brief
+ * @details
+ *
+ * @retval None
+ */
 void EmployeeDoWork(unsigned char TicketId)
 {
     /* implement the work according to TickedID */
     sprintf(usr_msg,"Employee task : Working on Ticked id : %d\r\n",TicketId);
     sendString(usr_msg);
-    vTaskDelay(TicketId);
+    vTaskDelay(pdMS_TO_TICKS(TicketId));
 }
 
+/**
+ * @brief
+ * @details
+ *
+ * @retval None
+ */
 static void vEmployeeTask( void *pvParameters )
 {
 
