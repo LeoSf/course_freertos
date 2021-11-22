@@ -63,7 +63,7 @@ extern const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI;
 **********************************************************************
 */
 // The application name to be displayed in SystemViewer
-#define SYSVIEW_APP_NAME        "Example 008: Queue Processing in FreeRTOS for NUCLEO-L552."
+#define SYSVIEW_APP_NAME        "Example 009: Binary semaphore in FreeRTOS for NUCLEO-L552."
 
 // The target device name
 #define SYSVIEW_DEVICE_NAME     "NUCLEO-L552ZE-Q"
