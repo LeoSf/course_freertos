@@ -422,7 +422,8 @@ void vManagerTask( void *pvParameters )
 
         }else
         {
-            SEGGER_SYSVIEW_PrintfTarget("xWorkTicketId: %i", xWorkTicketId);
+            sprintf(usr_msg,"xWorkTicketId: %d", xWorkTicketId);
+            SEGGER_SYSVIEW_PrintfTarget(usr_msg);
 
             /* Manager notifying the employee by "Giving" semaphore */
             xSemaphoreGive( xWork);
